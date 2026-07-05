@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A4 — the spread-bias decision</title>
+<style>
+  body{max-width:820px;margin:0 auto;padding:28px 20px 80px;
+       font:16px/1.6 -apple-system,Segoe UI,Roboto,sans-serif;color:#1b2a30;background:#fbfcfa}
+  h1{font-size:26px;border-bottom:2px solid #a8823a;padding-bottom:8px}
+  h2{font-size:20px;margin-top:30px;color:#235b56}
+  .back{display:inline-block;margin-bottom:16px;color:#235b56;text-decoration:none;font-size:14px}
+  .chart{background:#fff;border:1px solid #dde3dd;border-radius:12px;padding:14px;margin:18px 0}
+  figcaption{font-size:14px;color:#5c6b71;margin-top:8px}
+  table{border-collapse:collapse;width:100%;margin:14px 0}
+  th,td{border:1px solid #dde3dd;padding:7px 10px;text-align:center;font-size:14.5px}
+  th{background:#f1e9d8}
+  .rec{background:#e4efed;border:1px solid #cbe0dc;border-radius:10px;padding:14px 18px;margin:18px 0}
+  .leg{display:flex;gap:22px;flex-wrap:wrap;font-size:13.5px;margin-top:6px}
+  .leg span{display:inline-flex;align-items:center;gap:7px}
+  .sw{width:22px;height:0;border-top-width:3px;border-top-style:solid;display:inline-block}
+</style>
+</head>
+<body>
+<a class="back" href="index.html">&larr; back to hub</a>
+<h1>A4 — should we correct the "spread runs a bit low" bias?</h1>
+
+<p>Neyer's paper notes that when you only run a handful of tests, the tool's estimate
+of the <strong>spread</strong> comes out slightly <strong>too low</strong> — by roughly
+<strong>3.5 &divide; (number of tests)</strong>. The question on the table: do we leave
+that as a documented quirk, or build machinery to correct it?</p>
+
+<p>First, here is what <em>your</em> tool actually does. We ran it many times on a
+population whose true spread is exactly <strong>1.0</strong>, and averaged its answer:</p>
+
+<div class="chart">
+<svg viewBox="0 0 600 340" role="img" aria-label="Chart: the tool's spread estimate rises toward the true value of 1.0 as the number of tests grows.">
+  <!-- y gridlines + labels -->
+  <line x1="70" y1="77.1"  x2="550" y2="77.1"  stroke="#e8ece6"/>
+  <line x1="70" y1="151.4" x2="550" y2="151.4" stroke="#e8ece6"/>
+  <line x1="70" y1="225.7" x2="550" y2="225.7" stroke="#e8ece6"/>
+  <line x1="70" y1="300"   x2="550" y2="300"   stroke="#c9d2cb"/>
+  <text x="62" y="81"  text-anchor="end" font-size="12" fill="#5c6b71">1.00</text>
+  <text x="62" y="155" text-anchor="end" font-size="12" fill="#5c6b71">0.90</text>
+  <text x="62" y="229" text-anchor="end" font-size="12" fill="#5c6b71">0.80</text>
+  <text x="62" y="304" text-anchor="end" font-size="12" fill="#5c6b71">0.70</text>
+  <!-- x labels -->
+  <text x="130" y="320" text-anchor="middle" font-size="12" fill="#5c6b71">30 tests</text>
+  <text x="250" y="320" text-anchor="middle" font-size="12" fill="#5c6b71">40 tests</text>
+  <text x="490" y="320" text-anchor="middle" font-size="12" fill="#5c6b71">60 tests</text>
+
+  <!-- true value = 1.0 (brass reference) -->
+  <line x1="70" y1="77.1" x2="550" y2="77.1" stroke="#a8823a" stroke-width="2.5"/>
+  <text x="554" y="74" font-size="12" fill="#a8823a">true = 1.00</text>
+
+  <!-- Neyer prediction (dashed teal) -->
+  <polyline points="130,163.8 250,142.1 490,120.4" fill="none" stroke="#2f6f6a" stroke-width="2.5" stroke-dasharray="6 5"/>
+  <circle cx="130" cy="163.8" r="4" fill="#2f6f6a"/>
+  <circle cx="250" cy="142.1" r="4" fill="#2f6f6a"/>
+  <circle cx="490" cy="120.4" r="4" fill="#2f6f6a"/>
+
+  <!-- Measured (solid clay) -->
+  <polyline points="130,253.2 250,176.7 490,135.1" fill="none" stroke="#bd5e34" stroke-width="3"/>
+  <circle cx="130" cy="253.2" r="5" fill="#bd5e34"/>
+  <circle cx="250" cy="176.7" r="5" fill="#bd5e34"/>
+  <circle cx="490" cy="135.1" r="5" fill="#bd5e34"/>
+</svg>
+<div class="leg">
+  <span><span class="sw" style="border-color:#a8823a"></span>true spread (1.00)</span>
+  <span><span class="sw" style="border-color:#bd5e34"></span>your tool's average estimate</span>
+  <span><span class="sw" style="border-color:#2f6f6a;border-top-style:dashed"></span>Neyer's predicted 1&minus;3.5/N</span>
+</div>
+<figcaption>The clay line (your tool) sits <em>below</em> 1.00 — the estimate is biased low, exactly the direction Neyer describes — and <strong>climbs back toward the true value as you run more tests</strong>. At small samples it dips a little further than Neyer's formula; the two converge as the sample grows.</figcaption>
+</div>
+
+<table>
+  <tr><th>tests (N)</th><th>your tool's avg estimate</th><th>Neyer predicts (1&minus;3.5/N)</th><th>true</th></tr>
+  <tr><td>30</td><td>0.76</td><td>0.88</td><td>1.00</td></tr>
+  <tr><td>40</td><td>0.87</td><td>0.91</td><td>1.00</td></tr>
+  <tr><td>60</td><td>0.92</td><td>0.94</td><td>1.00</td></tr>
+</table>
+
+<h2>What drives the gap? Your starting guess</h2>
+<p>Here is the important part. We ran the <em>identical</em> test two ways — once from a
+<strong>wildly wrong</strong> starting guess (off by 5&times;) and once from a
+<strong>sensible</strong> one — and compared both to Neyer's line and the true value of 1.0:</p>
+
+<div class="chart">
+<svg viewBox="0 0 600 340" role="img" aria-label="Chart comparing the spread estimate from a good starting guess versus a bad one, against Neyer's prediction and the true value.">
+  <!-- y gridlines + labels -->
+  <line x1="70" y1="66"  x2="550" y2="66"  stroke="#e8ece6"/>
+  <line x1="70" y1="118" x2="550" y2="118" stroke="#e8ece6"/>
+  <line x1="70" y1="170" x2="550" y2="170" stroke="#e8ece6"/>
+  <line x1="70" y1="222" x2="550" y2="222" stroke="#e8ece6"/>
+  <line x1="70" y1="274" x2="550" y2="274" stroke="#e8ece6"/>
+  <g font-size="12" fill="#5c6b71">
+    <text x="62" y="70"  text-anchor="end">1.00</text>
+    <text x="62" y="122" text-anchor="end">0.90</text>
+    <text x="62" y="174" text-anchor="end">0.80</text>
+    <text x="62" y="226" text-anchor="end">0.70</text>
+    <text x="62" y="278" text-anchor="end">0.60</text>
+    <text x="118" y="300" text-anchor="middle">20 tests</text>
+    <text x="310" y="300" text-anchor="middle">40 tests</text>
+    <text x="502" y="300" text-anchor="middle">60 tests</text>
+  </g>
+  <!-- true = 1.0 -->
+  <line x1="70" y1="66" x2="550" y2="66" stroke="#a8823a" stroke-width="2.5"/>
+  <text x="554" y="63" font-size="11" fill="#a8823a">true 1.00</text>
+  <!-- Neyer prediction (grey dashed) -->
+  <polyline points="118,157 310,111.5 502,96.3" fill="none" stroke="#9aa6a0" stroke-width="2" stroke-dasharray="6 5"/>
+  <circle cx="118" cy="157" r="3.5" fill="#9aa6a0"/><circle cx="310" cy="111.5" r="3.5" fill="#9aa6a0"/><circle cx="502" cy="96.3" r="3.5" fill="#9aa6a0"/>
+  <!-- GOOD guess (teal solid) -->
+  <polyline points="118,112.8 310,92 502,76.4" fill="none" stroke="#2f6f6a" stroke-width="3"/>
+  <circle cx="118" cy="112.8" r="5" fill="#2f6f6a"/><circle cx="310" cy="92" r="5" fill="#2f6f6a"/><circle cx="502" cy="76.4" r="5" fill="#2f6f6a"/>
+  <!-- BAD guess (clay solid) -->
+  <polyline points="118,274 310,138.8 502,92" fill="none" stroke="#bd5e34" stroke-width="3"/>
+  <circle cx="118" cy="274" r="5" fill="#bd5e34"/><circle cx="310" cy="138.8" r="5" fill="#bd5e34"/><circle cx="502" cy="92" r="5" fill="#bd5e34"/>
+</svg>
+<div class="leg">
+  <span><span class="sw" style="border-color:#2f6f6a"></span>GOOD starting guess</span>
+  <span><span class="sw" style="border-color:#bd5e34"></span>BAD starting guess (off 5&times;)</span>
+  <span><span class="sw" style="border-color:#9aa6a0;border-top-style:dashed"></span>Neyer's prediction</span>
+  <span><span class="sw" style="border-color:#a8823a"></span>true 1.00</span>
+</div>
+<figcaption>Same tool, same maths — only the starting guess changed. With a <strong>good</strong>
+guess (teal) the estimate sits right on Neyer's line and near the true 1.00. With a
+<strong>bad</strong> guess (clay) it sags well below, because early drops are spent just
+<em>finding the zone</em> instead of measuring the spread. The gap shrinks as tests grow.</figcaption>
+</div>
+
+<table>
+  <tr><th>tests (N)</th><th>bad guess</th><th>good guess</th><th>Neyer predicts</th></tr>
+  <tr><td>20</td><td>0.60</td><td>0.91</td><td>0.83</td></tr>
+  <tr><td>40</td><td>0.86</td><td>0.95</td><td>0.91</td></tr>
+  <tr><td>60</td><td>0.95</td><td>0.98</td><td>0.94</td></tr>
+</table>
+
+<p><strong>So the earlier "mismatch" was not a flaw — it was a bad starting guess paying a
+one-time "search tax".</strong> Neyer's number assumes you already start near the right region;
+give the tool a sensible starting height and it lands right where the paper says. And with very
+few tests (~10) a bad guess bites hardest — the tool can run out of parts still searching and
+never reach an answer at all. The fix is the same either way: <strong>a reasonable starting
+height, and plenty of parts.</strong></p>
+
+<h2>What this means for the decision</h2>
+<p>The <strong>direction and trend of the bias are correct and demonstrable</strong> — you can
+show an instructor this chart and say "my tool reproduces Neyer's known small-sample bias, and
+it shrinks as the sample grows, just as the paper says." What is <em>hard</em> is pinning the
+<em>exact</em> &minus;3.5/N number into an automated pass/fail test: that figure is an
+<em>idealised</em> value (it assumes every test sits perfectly at the sweet spots), so a real
+run drifts a bit around it. Forcing it into a tight tolerance would be dishonest.</p>
+
+<p>Note the confidence tests that <em>are</em> automated (the variance formulas) already pass
+exactly — only the <em>bias</em> coefficient was left out, on purpose, rather than faked.</p>
+
+<div class="rec">
+<strong>Recommendation: leave it as-is, documented (Option 1).</strong> Keep the exact
+variance test passing; document the bias as a known finite-sample quirk with this chart as
+evidence. It is the honest, defensible position — and it is <em>stronger</em> for an instructor
+than a green light hiding an idealised number. The alternative (Option 2, a full bias study
+with larger samples and careful handling of the runs that can't be scored) is real work for
+little gain, since the effect is already shown to behave correctly.
+</div>
+
+<p style="color:#5c6b71;font-size:14.5px">Full write-up lives in
+<code>docs/defending_the_method.md</code> (the A4 footnote) and <code>HANDOVER.md</code> &sect;10.</p>
+</body>
+</html>

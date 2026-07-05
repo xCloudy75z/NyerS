@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>How to run the tool in MATLAB (or free Octave)</title>
+<style>
+  body{max-width:820px;margin:0 auto;padding:28px 20px 90px;
+       font:16px/1.62 -apple-system,Segoe UI,Roboto,sans-serif;color:#1b2a30;background:#fbfcfa}
+  h1{font-size:27px;border-bottom:2px solid #a8823a;padding-bottom:8px}
+  h2{font-size:21px;margin-top:34px;color:#235b56}
+  h3{font-size:17px;color:#7e6325;margin-bottom:6px}
+  .back{display:inline-block;margin-bottom:16px;color:#235b56;text-decoration:none;font-size:14px}
+  code{background:#eef0ec;padding:1px 5px;border-radius:4px;font-size:13.5px}
+  pre{background:#1b2a30;color:#eef0ec;padding:14px;border-radius:8px;overflow:auto;font-size:13px;line-height:1.5}
+  pre code{background:none;color:inherit;padding:0}
+  blockquote{border-left:4px solid #a8823a;margin:12px 0;padding:4px 16px;color:#5c6b71;background:#f6f7f4}
+  strong{font-weight:600}
+  hr{border:none;border-top:1px solid #dde3dd;margin:24px 0}
+  a{color:#bd5e34}
+  table{border-collapse:collapse;width:100%;margin:14px 0}
+  th,td{border:1px solid #dde3dd;padding:8px 11px;text-align:left;font-size:14.5px;vertical-align:top}
+  th{background:#f1e9d8}
+  .call{background:#e4efed;border:1px solid #cbe0dc;border-radius:10px;padding:14px 18px;margin:18px 0}
+  .warn{background:#f6e7df;border:1px solid #eccdba;border-radius:10px;padding:14px 18px;margin:18px 0}
+  .toc{background:#fff;border:1px solid #dde3dd;border-radius:12px;padding:14px 20px;margin:20px 0}
+  .toc b{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#7e6325}
+  .toc ol{margin:8px 0 0;padding-left:22px}
+  .toc a{color:#bd5e34;text-decoration:none}
+  .toc a:hover{text-decoration:underline}
+  ol li,ul li{margin:6px 0}
+</style>
+</head>
+<body>
+<a class="back" href="index.html">&larr; back to hub</a>
+<h1>How to run the tool in MATLAB (or free Octave)</h1>
+<p>Written for a non-technical user, and made <strong>colleague-proof</strong>: hand this to a
+lab-mate and they will be running the tool in a couple of minutes, without reading a line of the
+code. You will get the files, type <strong>one</strong> setup line, and then call the tool. Nothing
+here edits any files — you are only <em>running</em> it.</p>
+
+<div class="toc">
+  <b>The steps</b>
+  <ol>
+    <li><a href="#need">What you need</a></li>
+    <li><a href="#get">Get the files</a></li>
+    <li><a href="#setup">The one setup line</a></li>
+    <li><a href="#selfcheck">Prove it works (self-check)</a></li>
+    <li><a href="#run">Run your own test</a></li>
+    <li><a href="#floor">Set the floor for a real drop test</a></li>
+    <li><a href="#read">Read the results</a></li>
+    <li><a href="#table1">Reproduce the paper (the trust check)</a></li>
+    <li><a href="#settings">Settings you can change</a></li>
+    <li><a href="#onefile">One file for a colleague</a></li>
+    <li><a href="#trouble">If something goes wrong</a></li>
+  </ol>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="need">1 — What you need</h2>
+<p>Either one of these — the tool runs the same in both:</p>
+<ul>
+  <li><strong>MATLAB</strong> (the commercial program), or</li>
+  <li><strong>GNU Octave</strong> — a <strong>free</strong>, open-source stand-in for MATLAB. Download
+      it from <strong>octave.org</strong>. If you don't have a MATLAB licence, use this; every command
+      on this page works unchanged.</li>
+</ul>
+<p>No add-ons, no toolboxes, no internet connection required to run. The tool uses only the built-in
+functions that ship with either program.</p>
+
+<!-- ============================================================ -->
+<h2 id="get">2 — Get the files</h2>
+<p><strong>From OneDrive (use this if GitHub is blocked on your PC):</strong></p>
+<ol>
+  <li>Open your <strong>OneDrive</strong> — the app/folder on the PC, or
+      <strong>https://onedrive.live.com</strong> in a browser.</li>
+  <li>Find <strong><code>NyerS-v1.6.zip</code></strong> and download it.</li>
+  <li>Unzip it somewhere easy to find, e.g. your Desktop. You get a folder named
+      <strong><code>NyerS</code></strong> containing <code>run_test.m</code> and the folders
+      <code>src</code>, <code>tests</code>, <code>examples</code>, <code>config</code>.</li>
+</ol>
+<p><strong>Or, from GitHub (if you can reach it):</strong> open
+<strong>https://github.com/xCloudy75z/NyerS</strong>, click the green <strong><code>&lt; &gt; Code</code></strong>
+button → <strong>Download ZIP</strong>, and unzip. (Or
+<code>git clone https://github.com/xCloudy75z/NyerS.git</code>.)</p>
+<p>Either way you end up with a <code>NyerS</code> folder full of <code>.m</code> files — that's the tool.</p>
+
+<!-- ============================================================ -->
+<h2 id="setup">3 — The one setup line</h2>
+<p>Open MATLAB (or Octave). In the <strong>Command Window</strong> (the main prompt), type this
+<strong>one line</strong>, with the path to your unzipped folder, and press Enter:</p>
+<pre><code>addpath(genpath('C:\Users\you\Desktop\NyerS'))</code></pre>
+<p>That's the whole setup. <code>genpath</code> reaches into every sub-folder
+(<code>src</code>, <code>config</code>, <code>examples</code>, <code>tests</code> …), and
+<code>addpath</code> makes all of them visible at once — so every function the tool needs can find
+every other function.</p>
+
+<div class="call">
+<strong>For a colleague, this is the only line they ever need.</strong> Point it at wherever they
+unzipped the folder and everything below just works. (If you'd rather not type the path, drag the
+<code>NyerS</code> folder onto the MATLAB window first, or browse to it in the "Current Folder" panel,
+then still run the <code>addpath(genpath(...))</code> line — it is what fixes the
+"undefined function / too many files" errors people hit otherwise.)
+</div>
+
+<blockquote><em>Tip:</em> the path is where <em>you</em> unzipped it. On a Mac/Linux it looks like
+<code>addpath(genpath('/Users/you/Desktop/NyerS'))</code>. You only do this once per MATLAB session.</blockquote>
+
+<!-- ============================================================ -->
+<h2 id="selfcheck">4 — Prove it works (self-check)</h2>
+<p>Before trusting it, run the built-in self-check. Type:</p>
+<pre><code>run_all_tests</code></pre>
+<p>You'll see a lot of <code>ok</code> lines scroll by and, at the very end:</p>
+<pre><code>ALL TESTS PASSED (worker watchdogs + addendum A1/A2/A3/A4 + B1 tail-quantile + LR-confidence + reliability-at-confidence + min_level floor + acceptance + single-file bundle + pre-lab planner + popup UI)</code></pre>
+<p>If you see that line, the tool is working correctly on your machine. <strong>This is also the moment
+that confirms the tool — built and checked in free Octave — behaves identically in real MATLAB.</strong></p>
+
+<!-- ============================================================ -->
+<h2 id="run">5 — Run your own test</h2>
+<p>There are two ways to run a real test.</p>
+
+<h3>(a) Interactive — you type each result as you go</h3>
+<pre><code>params = struct('avg_low', 40, 'avg_high', 60, 'spread_guess', 5);   % your rough guess, in mm
+result = run_test(params, 25);   % 25 = how many parts you'll spend</code></pre>
+<ul>
+  <li><code>avg_low</code>, <code>avg_high</code> = your rough low/high guess for the average breaking
+      height. (No idea? Do the quick "ladder" on the
+      <a href="your-drop-test.html">drop-test page</a> first — it costs a few spare parts.)</li>
+  <li><code>spread_guess</code> = your rough guess for the spread. Even a bad guess is fine — the tool
+      self-corrects.</li>
+  <li><code>25</code> = how many parts you're willing to test. (More parts → sharper answer.)</li>
+</ul>
+<p>The tool then walks you through it, one part at a time:</p>
+<pre><code>Test 1 - set level to 50.0000. Did it break? (1=break / 0=survive):</code></pre>
+<p>Set your rig to that height, drop a <strong>fresh</strong> part, and type <code>1</code> if it
+broke or <code>0</code> if it survived, then Enter. Repeat until it's done.</p>
+
+<h3>(b) Scripted — you already have the results</h3>
+<p>If you already ran the drops and just want the tool to fit the numbers, feed the outcomes with a
+tiny function that returns the <em>k</em>-th result:</p>
+<pre><code>params   = struct('avg_low', 40, 'avg_high', 60, 'spread_guess', 5);
+outcomes = logical([0 0 0 0 0 1 0 0 0 0 0 0 1 0 1 0 1 1 1 1]);  % 1 = broke, 0 = survived
+result   = run_test(params, 20, @(level,k) outcomes(k));</code></pre>
+<p>The <code>@(level,k) outcomes(k)</code> part just says "for test number <em>k</em>, the outcome is
+<code>outcomes(k)</code>." The <code>20</code> must match how many outcomes you listed.</p>
+
+<!-- ============================================================ -->
+<h2 id="floor">6 — Set the floor for a real drop test</h2>
+<p>A drop height can never be negative. Out of the box the tool is pure Neyer and has <em>no</em>
+floor, so on a thin or badly-guessed run it can occasionally suggest a level below zero (it will print
+a one-time heads-up if that happens). For a real rig, tell it your lowest possible height — usually
+<strong>0&nbsp;mm</strong> — so suggested heights never go negative:</p>
+<pre><code>cfg = settings();       % load the default settings
+cfg.min_level = 0;      % your rig's lowest height (mm)
+result = run_test(params, 25, [], cfg);   % the [] keeps it interactive</code></pre>
+<p>The empty <code>[]</code> in the third slot means "still ask me for each result" — you're only
+swapping in the custom settings. (For a scripted run, put your outcome function there instead of the
+<code>[]</code>.)</p>
+<div class="call">
+<strong>What the floor does:</strong> when the method wants a height below your floor, it
+<strong>tests at the floor instead</strong> and prints an honest one-line note. That's the fix for the
+"try this next: −16 mm" situation — no impossible heights, and nothing is hidden from you.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="read">7 — Read the results</h2>
+<p>At the end the tool prints a plain-language report. With the paper's example it looks like this
+(your numbers will differ):</p>
+<pre><code>=== Neyer sensitivity test: RESULT (20 tests) ===
+
+AVERAGE breaking point: 5.3922
+  The level where about half the items break.
+  95% confident the true average is between 4.4871 and 6.5297.
+
+SPREAD (how much items vary): 1.0412
+  95% confident the true spread is between 0.5373 and 2.7422.
+
+ALL-FIRE level (99.9% of parts break): 8.6098
+  95% confident that 99.9% of parts break at or above 12.7455 mm.
+
+NO-FIRE level (99.9% of parts survive): 2.1746
+  A trustworthy safe (no-fire) height could not be pinned down with 20 tests
+  (the bound came out at or below zero) -- plan for about 73 parts in total.
+
+Note: the all-fire/no-fire edges are less certain than the average --
+  this test measures the whole picture, not just the far extremes.</code></pre>
+<p>In plain words:</p>
+<ul>
+  <li><strong>Average breaking point</strong> — the height where about half your parts break.</li>
+  <li><strong>Spread</strong> — how much the breaking height varies part to part (the standard
+      deviation).</li>
+  <li><strong>All-fire</strong> — set the height this high and essentially every part breaks. Your
+      "reliably breaks" number.</li>
+  <li><strong>No-fire</strong> — stay below this and essentially nothing breaks. Your "safe" number.</li>
+  <li>The <strong>"95% confident … between X and Y"</strong> lines are the confidence ranges — how
+      sure the tool is, given how few parts you tested. <strong>More parts tighten every range.</strong>
+      (See <a href="reading-confidence.html">Reading the confidence ranges</a>.)</li>
+  <li>The honest fallback — <em>"could not be pinned down … plan for about N parts"</em> — appears when
+      the data are too thin for a trustworthy bound. That's the tool refusing to print a false number,
+      not a bug. Test more parts to firm it up.</li>
+</ul>
+
+<p><strong>Ask the calculator for any reliability or height.</strong> After a run, type:</p>
+<pre><code>reliability_query(result)</code></pre>
+<p>for a guided menu: pick a target reliability (1 in 100 … up to 1 in a million, or type your own %)
+and get the safe height, or give a height and get the reliability, or ask how many parts you'd need.
+Full walkthrough on the <a href="reliability-calculator.html">reliability calculator page</a>.</p>
+
+<p><strong>See your result as a chart.</strong> Type:</p>
+<pre><code>plot_result(result)</code></pre>
+<p>to open a bell-curve picture of your fitted distribution, with the average, spread, all-fire/no-fire
+and the confidence range marked. (Each call opens a fresh figure.)</p>
+
+<p>The numbers are also inside <code>result</code> — <code>result.mu</code> (average),
+<code>result.sigma</code> (spread), <code>result.all_fire</code>, <code>result.no_fire</code>, and the
+confidence bounds <code>result.mu_lo</code>/<code>.mu_hi</code>, <code>result.sigma_lo</code>/<code>.sigma_hi</code>,
+<code>result.all_fire_cbound</code>, <code>result.no_fire_cbound</code>.</p>
+
+<!-- ============================================================ -->
+<h2 id="table1">8 — Reproduce the paper (the trust check)</h2>
+<p>This is the one to show your instructor: it re-runs Neyer's own 1994 worked example and checks the
+tool lands on the paper's published answer.</p>
+<pre><code>table1_paper</code></pre>
+<p>Near the end you should see:</p>
+<pre><code>Headline: average 5.3922 (paper 5.39) [ok],  spread 1.0412 (paper 1.04) [ok]</code></pre>
+<p><code>[ok]</code> means the tool matched the published result to two decimals — the same numbers an
+independent Python package (senpy) and the scipy library also reproduce. (The full validation story is
+on <a href="how-we-know.html">How we know the tool is right</a>.)</p>
+
+<!-- ============================================================ -->
+<h2 id="settings">9 — Settings you can change yourself</h2>
+<p>Every value the tool uses lives in <strong>one file — <code>config/settings.m</code></strong> — each
+labelled with where it comes from. You never <em>have</em> to touch it, but a few settings are worth
+knowing. To change one: open <code>config/settings.m</code> in MATLAB (or any text editor), edit the
+number after the <code>=</code>, save, and re-run.</p>
+
+<h3>1. How the suggested height is rounded — <code>s.level_decimals = 2;</code></h3>
+<p>The tool suggests heights to 2 decimal places (e.g. <code>50.00</code>). This only affects the
+<em>number it prints to you</em> — never the maths or your results. Set your rig as close as it allows.
+To have it suggest <strong>whole millimetres</strong>, change the <code>2</code> to <code>0</code>.</p>
+<blockquote><em>Note:</em> the self-check (Step 4) and the paper reproduction (Step 8) assume 2 decimals.
+If you change <code>level_decimals</code>, set it back to <code>2</code> before running those.</blockquote>
+
+<h3>2. The strictness for all-fire / no-fire — <code>s.tail_fraction = 0.999;</code></h3>
+<p>This is the "99.9%" in the all-fire / no-fire lines. Change it for a stricter or looser level (e.g.
+<code>0.9999</code> for 99.99%). It must stay between 0.5 and 1 — the tool refuses anything else with a
+clear message.</p>
+
+<h3>3. The confidence level — <code>s.confidence_level = 0.95;</code></h3>
+<p>This is the "95%" in the confidence ranges. Change it for a stricter or looser confidence (e.g.
+<code>0.90</code> or <code>0.99</code>). It must stay between 0 and 1.</p>
+
+<h3>4. The physical floor — <code>s.min_level = -Inf;</code></h3>
+<p>The lowest height your rig can apply. Left at <code>-Inf</code> it is off (pure Neyer). Set it to
+<code>0</code> for a drop test so suggested heights never go negative — see Step 6. (You can also set
+it on the fly with <code>cfg.min_level = 0;</code> as shown there, without editing the file.)</p>
+
+<!-- ============================================================ -->
+<h2 id="onefile">One file for a colleague</h2>
+<p>A ready-to-run <code>neyer-v1.6.mlx</code> Live Script is included in the download (pre-run, with built-in pop-up prompts) — just open it in MATLAB. If you ever need to rebuild it from source, run <code>build_bundle</code> then Save As <code>.mlx</code> (see <code>docs/how_to_make_the_mlx.md</code>).</p>
+
+<!-- ============================================================ -->
+<hr />
+<h2 id="trouble">If something goes wrong</h2>
+<ul>
+  <li><strong>"Undefined function" or "cannot find" errors</strong> → the setup line didn't take.
+      Re-run <code>addpath(genpath('...'))</code> (Step 3) with the correct path to your
+      <code>NyerS</code> folder.</li>
+  <li>If MATLAB/Octave shows a <strong>red error message</strong>, copy the whole thing and send it
+      back — it says exactly what to fix. The tool uses only standard features, so errors should be
+      rare.</li>
+  <li>If <code>run_all_tests</code> shows any <code>FAIL</code> line, copy that line too.</li>
+</ul>
+<p>That's everything. You never need to read or edit the code to use it.</p>
+</body>
+</html>

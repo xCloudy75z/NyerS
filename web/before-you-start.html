@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Before you start — parts &amp; first height</title>
+<style>
+  :root{--ink:#1b2a30;--soft:#5c6b71;--line:#dde3dd;--brass:#a8823a;--teal:#2f6f6a;--teal2:#235b56;--clay:#bd5e34;--paper:#fbfcfa}
+  *{box-sizing:border-box}
+  body{max-width:820px;margin:0 auto;padding:28px 20px 90px;
+       font:16px/1.62 -apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--paper)}
+  h1{font-size:27px;border-bottom:2px solid var(--brass);padding-bottom:8px;margin-bottom:6px}
+  .back{display:inline-block;margin-bottom:16px;color:var(--teal2);text-decoration:none;font-size:14px}
+  .lead{color:var(--soft);font-size:18px;margin-top:4px}
+  a{color:var(--clay)}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px;margin:18px 0}
+  label{display:block;font-size:14px;color:var(--teal2);font-weight:600;margin:12px 0 4px}
+  input,select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;width:100%;max-width:260px;background:#fff;color:var(--ink)}
+  .row{display:flex;gap:16px;flex-wrap:wrap}
+  .row>div{flex:1;min-width:180px}
+  .out{background:#f1e9d8;border:1px solid #e4d6b3;border-radius:12px;padding:18px;margin:18px 0}
+  .out .big{font-size:30px;font-weight:700;color:#7e6325}
+  .out .lbl{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
+  .out .two{display:flex;gap:28px;flex-wrap:wrap}
+  .note{font-size:14px;color:var(--soft);margin-top:12px}
+  .err{color:#9c4a26;font-size:14px;margin-top:8px;min-height:18px}
+  button{font:inherit;background:var(--teal2);color:#fff;border:none;border-radius:8px;padding:9px 16px;cursor:pointer;margin-top:8px}
+  @media print{
+    .back,button,.noprint{display:none}
+    body{padding:0}
+    .out{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+</style>
+</head>
+<body>
+<a class="back" href="index.html">&larr; back to hub</a>
+<h1>Before you start — parts &amp; first height</h1>
+<p class="lead">Two numbers to work out at home before you print anything: how many parts to prepare,
+and the height of your first drop. Fill in your guess and the reliability/confidence you want, then Print.</p>
+
+<div class="card noprint">
+  <div class="row">
+    <div><label for="lo">Low guess for the average height (mm)</label><input id="lo" type="number" step="any" value="0.6"></div>
+    <div><label for="hi">High guess (mm)</label><input id="hi" type="number" step="any" value="1.4"></div>
+  </div>
+  <div class="row">
+    <div><label for="R">Reliability you want</label>
+      <select id="R">
+        <option value="0.9">90% (1 in 10)</option>
+        <option value="0.99">99% (1 in 100)</option>
+        <option value="0.999" selected>99.9% (1 in 1,000)</option>
+        <option value="0.9999">99.99% (1 in 10,000)</option>
+        <option value="custom">type my own %…</option>
+      </select>
+      <input id="Rcustom" type="number" step="any" placeholder="e.g. 99.5" style="display:none;margin-top:6px">
+    </div>
+    <div><label for="C">Confidence (%)</label><input id="C" type="number" step="any" value="95"></div>
+  </div>
+  <div class="err" id="err"></div>
+</div>
+
+<div class="out" id="out">
+  <div class="two">
+    <div><div class="lbl">Prepare about</div><div class="big" id="nParts">—</div><div class="lbl">parts</div></div>
+    <div><div class="lbl">Start first drop at</div><div class="big" id="startH">—</div><div class="lbl">mm (midpoint of your guess)</div></div>
+  </div>
+  <div class="note" id="notes"></div>
+</div>
+<button onclick="window.print()">Print this sheet</button>
+
+<p class="note" style="margin-top:22px">This gives the count and the <em>first</em> height only — the tool
+picks every height after that. See <a href="reliability-calculator.html">the reliability calculator</a>
+and <a href="how-it-flows.html">how the tool works</a>.</p>
+
+<script>
+// --- normal quantile via Acklam's rational approximation (~1e-9) ---
+function prepNorminv(p){
+  var a=[-3.969683028665376e+01,2.209460984245205e+02,-2.759285104469687e+02,1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00];
+  var b=[-5.447609879822406e+01,1.615858368580409e+02,-1.556989798598866e+02,6.680131188771972e+01,-1.328068155288572e+01];
+  var c=[-7.784894002430293e-03,-3.223964580411365e-01,-2.400758277161838e+00,-2.549732539343734e+00,4.374664141464968e+00,2.938163982698783e+00];
+  var d=[7.784695709041462e-03,3.224671290700398e-01,2.445134137142996e+00,3.754408661907416e+00];
+  var plow=0.02425, phigh=1-plow, q, r;
+  if(p<plow){ q=Math.sqrt(-2*Math.log(p));
+    return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1); }
+  if(p<=phigh){ q=p-0.5; r=q*q;
+    return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1); }
+  q=Math.sqrt(-2*Math.log(1-p));
+  return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+}
+// --- mirrors plan_samples (banerjee, sigma-independent). prec/floor mirror settings.m ---
+function prepParts(R,C){
+  var PREC=0.5, FLOOR=20;                         // settings.plan_rel_precision, settings.sample_floor
+  var k=prepNorminv(R), zc=prepNorminv(C);
+  var a=1/0.392 + k*k/0.507 + 2*Math.abs(k)*Math.sqrt(1/(0.392*0.507));
+  var nRaw=Math.ceil(Math.pow(zc*Math.sqrt(a)/PREC,2));
+  return {n:Math.max(FLOOR,nRaw), bogey:Math.ceil(Math.log(1-C)/Math.log(R)), floor:FLOOR};
+}
+function prepStart(lo,hi){ return (lo+hi)/2; }
+
+(function(){
+  var $=function(id){return document.getElementById(id);};
+  function fmt(x){ return (Math.round(x*10000)/10000); }
+  function recompute(){
+    var err=$('err'); err.textContent='';
+    var lo=parseFloat($('lo').value), hi=parseFloat($('hi').value);
+    var C=parseFloat($('C').value)/100;
+    var Rsel=$('R').value, R = Rsel==='custom' ? parseFloat($('Rcustom').value)/100 : parseFloat(Rsel);
+    if(!(isFinite(lo)&&isFinite(hi)&&lo<hi)){ err.textContent='Low guess must be a number below the high guess.'; blank(); return; }
+    if(!(isFinite(R)&&R>0&&R<1)){ err.textContent='Reliability must be between 0 and 100%.'; blank(); return; }
+    if(!(isFinite(C)&&C>0&&C<1)){ err.textContent='Confidence must be between 0 and 100%.'; blank(); return; }
+    var p=prepParts(R,C);
+    $('nParts').textContent=p.n;
+    $('startH').textContent=fmt(prepStart(lo,hi));
+    $('notes').innerHTML='Target: <b>'+fmt(R*100)+'%</b> of parts, <b>'+fmt(C*100)+'%</b> confidence. '+
+      'Never fewer than '+p.floor+' parts (small samples are not yet dependable). '+
+      'For contrast, counting failures directly would need about <b>'+p.bogey+'</b> parts.';
+  }
+  function blank(){ $('nParts').textContent='—'; $('startH').textContent='—'; $('notes').textContent=''; }
+  $('R').addEventListener('change',function(){ $('Rcustom').style.display = this.value==='custom'?'block':'none'; recompute(); });
+  ['lo','hi','C','Rcustom'].forEach(function(id){ $(id).addEventListener('input',recompute); });
+  recompute();
+})();
+</script>
+</body>
+</html>

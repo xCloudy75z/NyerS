@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>What this method does</title>
+<style>
+  body{max-width:820px;margin:0 auto;padding:28px 20px 90px;
+       font:16px/1.62 -apple-system,Segoe UI,Roboto,sans-serif;color:#1b2a30;background:#fbfcfa}
+  h1{font-size:27px;border-bottom:2px solid #a8823a;padding-bottom:8px}
+  h2{font-size:21px;margin-top:34px;color:#235b56}
+  .back{display:inline-block;margin-bottom:16px;color:#235b56;text-decoration:none;font-size:14px}
+  .fig{background:#fff;border:1px solid #dde3dd;border-radius:12px;padding:16px;margin:18px 0}
+  figcaption{font-size:14px;color:#5c6b71;margin-top:8px}
+  .leg{display:flex;gap:20px;flex-wrap:wrap;font-size:13px;margin-top:8px}
+  .leg span{display:inline-flex;align-items:center;gap:7px}
+  .dot{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .stages{display:grid;gap:12px;margin:12px 0}
+  .stage{background:#fff;border:1px solid #dde3dd;border-left:4px solid #a8823a;border-radius:10px;padding:14px 16px}
+  .stage b{color:#7e6325}
+  .call{background:#e4efed;border:1px solid #cbe0dc;border-radius:10px;padding:14px 18px;margin:18px 0}
+  a{color:#bd5e34}
+</style>
+</head>
+<body>
+<a class="back" href="index.html">&larr; back to hub</a>
+<h1>What this method does (in plain words)</h1>
+<p>Some things can only be tested by <strong>breaking</strong> them, and each test tells you only
+one thing: it <em>broke</em> or it <em>didn't</em> — never how close it came. This tool decides
+<strong>where to test next</strong> so each costly, one-use test teaches the most, and from the
+pattern of breaks and survives it works out two numbers:</p>
+<ul>
+  <li>the <strong>average</strong> breaking point, and</li>
+  <li>the <strong>spread</strong> — how much that point varies from one item to the next.</li>
+</ul>
+
+<div class="fig">
+<svg viewBox="0 0 640 320" role="img" aria-label="A curve rising from 'almost always survives' at low levels to 'almost always breaks' at high levels, with test points clustered near the uncertain middle.">
+  <!-- axes -->
+  <line x1="60" y1="270" x2="610" y2="270" stroke="#c9d2cb" stroke-width="1.5"/>
+  <text x="60" y="296" font-size="12.5" fill="#5c6b71">low level (e.g. small drop height)</text>
+  <text x="610" y="296" text-anchor="end" font-size="12.5" fill="#5c6b71">high level &rarr;</text>
+  <text x="30" y="150" font-size="12" fill="#9aa6a0" transform="rotate(-90 30 150)">chance of breaking &rarr;</text>
+  <!-- average line -->
+  <line x1="335" y1="50" x2="335" y2="270" stroke="#a8823a" stroke-width="1.4" stroke-dasharray="5 5"/>
+  <text x="335" y="42" text-anchor="middle" font-size="12" fill="#a8823a">average = even odds (50/50)</text>
+  <!-- response curve -->
+  <path d="M70 262 C 230 258, 285 235, 335 160 C 385 85, 440 62, 610 56"
+        fill="none" stroke="#1b2a30" stroke-width="2.6" stroke-linecap="round"/>
+  <!-- survive dots -->
+  <circle cx="150" cy="260" r="6" fill="#2f6f6a"/>
+  <circle cx="250" cy="246" r="6" fill="#2f6f6a"/>
+  <circle cx="300" cy="205" r="6" fill="#2f6f6a"/>
+  <circle cx="322" cy="180" r="6" fill="#2f6f6a"/>
+  <!-- break dots -->
+  <circle cx="352" cy="138" r="6" fill="#bd5e34"/>
+  <circle cx="378" cy="110" r="6" fill="#bd5e34"/>
+  <circle cx="450" cy="78"  r="6" fill="#bd5e34"/>
+  <circle cx="540" cy="64"  r="6" fill="#bd5e34"/>
+  <text x="70" y="255" font-size="12" fill="#2f6f6a">almost always survives</text>
+  <text x="610" y="80" text-anchor="end" font-size="12" fill="#bd5e34">almost always breaks</text>
+</svg>
+<div class="leg">
+  <span><span class="dot" style="background:#2f6f6a"></span>survived</span>
+  <span><span class="dot" style="background:#bd5e34"></span>broke</span>
+  <span><span class="dot" style="background:#a8823a"></span>the average breaking point</span>
+</div>
+<figcaption>Each item has its own hidden breaking point; you can only watch it survive or break at a
+level you choose. The tool clusters its tests near the <em>uncertain middle</em>, where a single
+test teaches the most, then reads off the average and the spread.</figcaption>
+</div>
+
+<h2>How it works — three stages</h2>
+<p>The tool keeps asking one question, <em>"where should I test next?"</em>, in three stages:</p>
+<div class="stages">
+  <div class="stage"><b>1 · Find the zone.</b> Start near your rough guess and reach further out,
+    roughly doubling the step each time, until you've seen <em>both</em> a break and a survive.
+    This works even if your guess is way off — it just costs a few extra tests.</div>
+  <div class="stage"><b>2 · Close the gap.</b> Narrow in between the highest survive and the lowest
+    break, until the results start to <em>overlap</em> (a lower level breaks while a higher one
+    survived). Until that happens, there isn't yet enough information for a real answer.</div>
+  <div class="stage"><b>3 · Refine.</b> Now a real answer exists. Each remaining test goes at the
+    single most-informative level, sharpening the average and the spread. Stop when your items run
+    out, and report the answer with its confidence.</div>
+</div>
+
+<div class="call">
+<strong>The clever bit:</strong> the tool does <em>not</em> test at its best guess of the average.
+It tests <strong>slightly off to the side</strong>. Why? You're after <em>two</em> numbers. The
+dead-centre (even-odds) level is best for pinning the <em>average</em>, but tells you nothing about
+the <em>spread</em> — you can only see how fast "survives" turns into "breaks" by testing out on
+the slope. So it picks the one spot that is the best deal for learning <em>both</em> at once. That
+single idea is the whole method.
+</div>
+
+<p style="margin-top:22px">Next: <a href="your-drop-test.html">how this maps to your drop test</a>
+· <a href="reading-results.html">reading your results</a></p>
+</body>
+</html>

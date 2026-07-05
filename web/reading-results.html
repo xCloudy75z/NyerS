@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reading your results</title>
+<style>
+  body{max-width:820px;margin:0 auto;padding:28px 20px 90px;
+       font:16px/1.62 -apple-system,Segoe UI,Roboto,sans-serif;color:#1b2a30;background:#fbfcfa}
+  h1{font-size:27px;border-bottom:2px solid #a8823a;padding-bottom:8px}
+  h2{font-size:21px;margin-top:32px;color:#235b56}
+  .back{display:inline-block;margin-bottom:16px;color:#235b56;text-decoration:none;font-size:14px}
+  .fig{background:#fff;border:1px solid #dde3dd;border-radius:12px;padding:16px;margin:18px 0}
+  pre{background:#1b2a30;color:#eef0ec;padding:14px;border-radius:8px;overflow:auto;font-size:13.5px;line-height:1.55}
+  table{border-collapse:collapse;width:100%;margin:14px 0}
+  th,td{border:1px solid #dde3dd;padding:8px 11px;text-align:left;font-size:14.5px;vertical-align:top}
+  th{background:#f1e9d8}
+  .warn{background:#f6e7df;border:1px solid #eccdba;border-radius:10px;padding:14px 18px;margin:18px 0}
+  .call{background:#e4efed;border:1px solid #cbe0dc;border-radius:10px;padding:14px 18px;margin:18px 0}
+  code{background:#eef0ec;padding:1px 5px;border-radius:4px;font-size:13.5px}
+  a{color:#bd5e34}
+</style>
+</head>
+<body>
+<a class="back" href="index.html">&larr; back to hub</a>
+<h1>Reading your results</h1>
+<p>When the test finishes, the tool prints something like this (numbers here are an
+<em>example</em>, in millimetres, for a drop test):</p>
+<pre>=== Neyer sensitivity test: RESULT (25 tests) ===
+  Average breaking point : 52.00  +/- 1.80 (1 std err)
+  Spread (std dev)       :  4.50  +/- 1.40 (1 std err)
+  All-fire  (99.9% break)  : 65.90  +/- 4.90
+  No-fire   (99.9% survive): 38.10  +/- 4.90
+  Note: a D-optimal test is not tuned for the far tails, so these
+        carry wider uncertainty than a purpose-built tail study would.</pre>
+
+<p>Here is what each line means, placed on a height axis:</p>
+<div class="fig">
+<svg viewBox="0 0 640 130" role="img" aria-label="A drop-height axis split into three zones: a safe no-fire zone at low heights, an uncertain middle around the average, and an all-fire zone at high heights.">
+  <rect x="40" y="44" width="180" height="26" fill="#e4efed" stroke="#cbe0dc"/>
+  <rect x="220" y="44" width="200" height="26" fill="#eef0ec" stroke="#dde3dd"/>
+  <rect x="420" y="44" width="180" height="26" fill="#f6e7df" stroke="#eccdba"/>
+  <line x1="320" y1="38" x2="320" y2="76" stroke="#a8823a" stroke-width="2"/>
+  <text x="320" y="32" text-anchor="middle" font-size="11.5" fill="#a8823a">average (52 mm)</text>
+  <text x="130" y="61" text-anchor="middle" font-size="12.5" fill="#235b56">No-fire (38 mm)</text>
+  <text x="320" y="61" text-anchor="middle" font-size="12" fill="#5c6b71">uncertain</text>
+  <text x="510" y="61" text-anchor="middle" font-size="12.5" fill="#9c4a26">All-fire (66 mm)</text>
+  <text x="40" y="96" font-size="11.5" fill="#5c6b71">lower drop height</text>
+  <text x="600" y="96" text-anchor="end" font-size="11.5" fill="#5c6b71">higher drop height &rarr;</text>
+</svg>
+</div>
+
+<table>
+  <tr><th>Line</th><th>What it means for your parts</th></tr>
+  <tr><td><b>Average breaking point</b></td>
+      <td>The drop height where about half your parts break and half survive. The single best "typical breaking height".</td></tr>
+  <tr><td><b>Spread</b></td>
+      <td>How much the breaking height varies from part to part. Small = your prints are consistent; large = they vary a lot.</td></tr>
+  <tr><td><b>All-fire</b></td>
+      <td>Drop from this height (or above) and essentially <em>every</em> part breaks. Your "reliably breaks" number.</td></tr>
+  <tr><td><b>No-fire</b></td>
+      <td>Stay below this height and essentially <em>no</em> part breaks. Your "safe" number.</td></tr>
+</table>
+
+<h2>Yes — it's a normal distribution (the bell curve)</h2>
+<p>This is the heart of the method, and exactly what your instructor means. The tool assumes your
+parts' breaking heights follow a <strong>normal distribution</strong> — the classic
+<em>bell curve</em>: most parts break near a central height, fewer break much lower or much higher.
+The two numbers the tool reports are simply the two numbers that define <em>any</em> bell curve:</p>
+<ul>
+  <li>the <strong>average</strong> is the <strong>centre (the mean)</strong> of the bell, and</li>
+  <li>the <strong>spread</strong> is the <strong>standard deviation</strong> — the width of the bell.</li>
+</ul>
+
+<div class="fig">
+<svg viewBox="0 0 640 300" role="img" aria-label="A bell curve of breaking heights: the average at the centre, the spread as one standard deviation width, and the no-fire and all-fire heights far out on the two tails.">
+  <!-- axis -->
+  <line x1="70" y1="250" x2="580" y2="250" stroke="#c9d2cb" stroke-width="1.5"/>
+  <text x="70" y="286" font-size="12" fill="#5c6b71">lower drop height</text>
+  <text x="580" y="286" text-anchor="end" font-size="12" fill="#5c6b71">drop height (mm) &rarr;</text>
+  <!-- filled bell -->
+  <path d="M110,248.1 L140,243.8 L170,232.9 L200,210.9 L230,175.7 L260,132.2 L290,95 L320,80 L350,95 L380,132.2 L410,175.7 L440,210.9 L470,232.9 L500,243.8 L530,248.1 L530,250 L110,250 Z" fill="#f1e9d8"/>
+  <!-- +/-1 sigma band -->
+  <path d="M250,147 L260,132.2 L290,95 L320,80 L350,95 L380,132.2 L390,147 L390,250 L250,250 Z" fill="#e7dbbe"/>
+  <!-- bell outline -->
+  <polyline points="110,248.1 140,243.8 170,232.9 200,210.9 230,175.7 260,132.2 290,95 320,80 350,95 380,132.2 410,175.7 440,210.9 470,232.9 500,243.8 530,248.1" fill="none" stroke="#1b2a30" stroke-width="2.4"/>
+  <!-- centre = average -->
+  <line x1="320" y1="80" x2="320" y2="250" stroke="#a8823a" stroke-width="2"/>
+  <text x="320" y="72" text-anchor="middle" font-size="12" fill="#a8823a">average = centre (mean)</text>
+  <!-- +/-1 sigma markers -->
+  <line x1="250" y1="147" x2="250" y2="250" stroke="#9aa6a0" stroke-width="1.3" stroke-dasharray="4 4"/>
+  <line x1="390" y1="147" x2="390" y2="250" stroke="#9aa6a0" stroke-width="1.3" stroke-dasharray="4 4"/>
+  <line x1="250" y1="262" x2="390" y2="262" stroke="#7e6325" stroke-width="1"/>
+  <polygon points="250,262 258,258 258,266" fill="#7e6325"/>
+  <polygon points="390,262 382,258 382,266" fill="#7e6325"/>
+  <text x="320" y="276" text-anchor="middle" font-size="11.5" fill="#7e6325">spread = 1 standard deviation each side</text>
+  <!-- no-fire / all-fire on the tails -->
+  <circle cx="110" cy="250" r="4.5" fill="#2f6f6a"/>
+  <text x="110" y="238" text-anchor="middle" font-size="11" fill="#235b56">No-fire</text>
+  <circle cx="530" cy="250" r="4.5" fill="#bd5e34"/>
+  <text x="530" y="238" text-anchor="middle" font-size="11" fill="#9c4a26">All-fire</text>
+</svg>
+<figcaption>The bell of breaking heights. The <strong>average</strong> sits at the centre; the
+<strong>spread</strong> is one <strong>standard deviation</strong> (the bell's width). About 2 in 3
+parts break within one standard deviation of the average. The <strong>no-fire</strong> and
+<strong>all-fire</strong> heights are far out on the two tails — roughly three standard deviations
+from the centre, where only about 1 part in 1000 is left.</figcaption>
+</div>
+
+<p>And the S-shaped "chance of breaking" curve on the
+<a href="what-it-does.html">what-it-does page</a> is the <em>same</em> bell curve seen another way:
+it's the <strong>running total</strong> of the bell as you raise the height — climbing from 0% up
+to 100%, and passing through exactly 50% at the average. Same normal distribution, two pictures.</p>
+
+<h2>What the "+/-" means</h2>
+<p>Every number comes with a <code>+/-</code> — its <strong>confidence</strong>. It's how much the
+number could wobble given how many parts you tested. <strong>Smaller <code>+/-</code> = more
+certain.</strong> For example <code>52.00 +/- 1.80</code> means "the true average is very likely
+within about 1.8&nbsp;mm of 52". <strong>The way to shrink every <code>+/-</code> is to test more
+parts</strong> — which you can, since you print your own.</p>
+
+<div class="warn">
+<strong>Two honest points to keep in view:</strong>
+<ul style="margin:8px 0 0">
+  <li>The <strong>spread</strong> reads a little low when you use few parts (see
+      <a href="a4-bias.html">the spread-bias page</a>) — another reason to print plenty.</li>
+  <li>The <strong>all-fire / no-fire</strong> numbers carry a wider <code>+/-</code> than the
+      average — the method sees the whole picture well, but the far edges are inherently less
+      certain. Quote them <em>with</em> their <code>+/-</code>, never on their own.</li>
+</ul>
+</div>
+
+<div class="call">
+The same numbers are also available inside the <code>result</code> value if you want to use them
+later — e.g. <code>result.mu</code> (average), <code>result.sigma</code> (spread),
+<code>result.all_fire</code>, <code>result.no_fire</code>.
+</div>
+
+<p style="margin-top:22px">Back to: <a href="what-it-does.html">what the method does</a>
+· <a href="your-drop-test.html">using it for your drop test</a></p>
+</body>
+</html>

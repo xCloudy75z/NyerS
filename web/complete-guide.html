@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The concept, in one page — Neyer sensitivity test</title>
+<style>
+  :root{--ink:#1b2a30;--soft:#5c6b71;--line:#dde3dd;--brass:#a8823a;--teal:#2f6f6a;--clay:#bd5e34;--paper:#fbfcfa}
+  body{max-width:840px;margin:0 auto;padding:30px 20px 100px;
+       font:16px/1.62 -apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--paper)}
+  h1{font-size:29px;border-bottom:2px solid var(--brass);padding-bottom:10px;line-height:1.15}
+  h2{font-size:22px;margin-top:44px;color:var(--teal);scroll-margin-top:16px;border-top:1px solid var(--line);padding-top:22px}
+  h3{font-size:17px;color:#7e6325;margin-bottom:6px}
+  p,li{max-width:74ch}
+  .lead{font-size:18px;color:var(--soft)}
+  .toc{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:22px 0}
+  .toc b{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#7e6325}
+  .toc ol{margin:8px 0 0;padding-left:22px;columns:2;column-gap:28px}
+  .toc a{color:var(--clay);text-decoration:none}
+  .toc a:hover{text-decoration:underline}
+  .fig{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;margin:18px 0}
+  .fig svg{display:block;width:100%;height:auto}
+  figcaption{font-size:14px;color:var(--soft);margin-top:8px}
+  .leg{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;margin-top:8px}
+  .leg span{display:inline-flex;align-items:center;gap:7px}
+  .dot{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .sw{width:22px;height:0;border-top-width:3px;border-top-style:solid;display:inline-block}
+  table{border-collapse:collapse;width:100%;margin:14px 0}
+  th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;font-size:14.5px;vertical-align:top}
+  th{background:#f1e9d8}
+  pre{background:#1b2a30;color:#eef0ec;padding:14px;border-radius:8px;overflow:auto;font-size:13.5px;line-height:1.55}
+  code{background:#eef0ec;padding:1px 5px;border-radius:4px;font-size:13.5px}
+  pre code{background:none;color:inherit;padding:0}
+  .stages{display:grid;gap:12px;margin:12px 0}
+  .stage{background:#fff;border:1px solid var(--line);border-left:4px solid var(--brass);border-radius:10px;padding:14px 16px}
+  .stage b{color:#7e6325}
+  .call{background:#e4efed;border:1px solid #cbe0dc;border-radius:10px;padding:14px 18px;margin:18px 0}
+  .warn{background:#f6e7df;border:1px solid #eccdba;border-radius:10px;padding:14px 18px;margin:18px 0}
+  .top{display:inline-block;font-size:12px;color:var(--soft);text-decoration:none;margin-top:6px}
+  ol li,ul li{margin:6px 0}
+</style>
+</head>
+<body>
+<h1>The concept, in one page: finding your parts' breaking point</h1>
+<p class="lead">The idea and the statistics behind the method — the normal distribution, the
+standard deviation, why it tests where it does, and how to read every number — with charts and
+worked examples throughout. (The step-by-step how-to-run and the adjustable settings live in the
+<a href="how-to-run-in-matlab.html">MATLAB guide</a>; more single-topic pages are on the
+<a href="index.html">hub</a>.)</p>
+
+<div class="toc">
+  <b>On this page</b>
+  <ol>
+    <li><a href="#what">What the method does</a></li>
+    <li><a href="#bell">It's a normal distribution</a></li>
+    <li><a href="#stages">The three stages</a></li>
+    <li><a href="#clever">Why it tests off-centre</a></li>
+    <li><a href="#map">How it fits your drop test</a></li>
+    <li><a href="#parts">Why more parts help</a></li>
+    <li><a href="#start">Finding a starting height</a></li>
+    <li><a href="#read">Reading the results</a></li>
+    <li><a href="#tails">Why the tail numbers are fuzzier</a></li>
+    <li><a href="#bias">Why "spread" reads low on few tests</a></li>
+  </ol>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="what">1 · What the method does</h2>
+<p>Some things can only be tested by <strong>breaking</strong> them, and each test tells you only
+one thing: it <em>broke</em> or it <em>didn't</em> — never how close it came. This method decides
+<strong>where to test next</strong> so each costly, one-use test teaches the most, and from the
+pattern of breaks and survives it works out two numbers: the <strong>average</strong> breaking
+point and the <strong>spread</strong> (how much it varies part to part).</p>
+
+<div class="fig">
+<svg viewBox="0 0 640 320" role="img" aria-label="A curve rising from 'almost always survives' at low levels to 'almost always breaks' at high levels, with test points clustered near the uncertain middle.">
+  <line x1="60" y1="270" x2="610" y2="270" stroke="#c9d2cb" stroke-width="1.5"/>
+  <text x="60" y="296" font-size="12.5" fill="#5c6b71">low level (e.g. small drop height)</text>
+  <text x="610" y="296" text-anchor="end" font-size="12.5" fill="#5c6b71">high level &rarr;</text>
+  <text x="30" y="150" font-size="12" fill="#9aa6a0" transform="rotate(-90 30 150)">chance of breaking &rarr;</text>
+  <line x1="335" y1="50" x2="335" y2="270" stroke="#a8823a" stroke-width="1.4" stroke-dasharray="5 5"/>
+  <text x="335" y="42" text-anchor="middle" font-size="12" fill="#a8823a">average = even odds (50/50)</text>
+  <path d="M70 262 C 230 258, 285 235, 335 160 C 385 85, 440 62, 610 56" fill="none" stroke="#1b2a30" stroke-width="2.6" stroke-linecap="round"/>
+  <circle cx="150" cy="260" r="6" fill="#2f6f6a"/><circle cx="250" cy="246" r="6" fill="#2f6f6a"/>
+  <circle cx="300" cy="205" r="6" fill="#2f6f6a"/><circle cx="322" cy="180" r="6" fill="#2f6f6a"/>
+  <circle cx="352" cy="138" r="6" fill="#bd5e34"/><circle cx="378" cy="110" r="6" fill="#bd5e34"/>
+  <circle cx="450" cy="78" r="6" fill="#bd5e34"/><circle cx="540" cy="64" r="6" fill="#bd5e34"/>
+  <text x="70" y="255" font-size="12" fill="#2f6f6a">almost always survives</text>
+  <text x="610" y="80" text-anchor="end" font-size="12" fill="#bd5e34">almost always breaks</text>
+</svg>
+<div class="leg">
+  <span><span class="dot" style="background:#2f6f6a"></span>survived</span>
+  <span><span class="dot" style="background:#bd5e34"></span>broke</span>
+  <span><span class="dot" style="background:#a8823a"></span>the average breaking point</span>
+</div>
+<figcaption>Each item has its own hidden breaking point; you only see survive/break at a level you
+choose. The method clusters tests near the uncertain middle, where a single test teaches the most.
+This S-shaped curve is the "chance of breaking" as the level rises.</figcaption>
+</div>
+<a class="top" href="#">↑ top</a>
+
+<!-- ============================================================ -->
+<h2 id="bell">2 · It's a normal distribution (the bell curve)</h2>
+<p>This is the heart of it, and exactly what "normal distribution" and "standard deviation" mean
+here. The method assumes your parts' breaking heights follow a <strong>normal distribution</strong>
+— a bell curve. The two numbers it reports are the two numbers that define <em>any</em> bell curve:</p>
+<ul>
+  <li>the <strong>average</strong> is the <strong>centre (mean)</strong> of the bell, and</li>
+  <li>the <strong>spread</strong> is the <strong>standard deviation</strong> — the bell's width.</li>
+</ul>
+<div class="fig">
+<svg viewBox="0 0 640 300" role="img" aria-label="A bell curve of breaking heights with the average at the centre, the spread as one standard-deviation width, and no-fire and all-fire on the far tails.">
+  <line x1="70" y1="250" x2="580" y2="250" stroke="#c9d2cb" stroke-width="1.5"/>
+  <text x="70" y="286" font-size="12" fill="#5c6b71">lower drop height</text>
+  <text x="580" y="286" text-anchor="end" font-size="12" fill="#5c6b71">drop height (mm) &rarr;</text>
+  <path d="M110,248.1 L140,243.8 L170,232.9 L200,210.9 L230,175.7 L260,132.2 L290,95 L320,80 L350,95 L380,132.2 L410,175.7 L440,210.9 L470,232.9 L500,243.8 L530,248.1 L530,250 L110,250 Z" fill="#f1e9d8"/>
+  <path d="M250,147 L260,132.2 L290,95 L320,80 L350,95 L380,132.2 L390,147 L390,250 L250,250 Z" fill="#e7dbbe"/>
+  <polyline points="110,248.1 140,243.8 170,232.9 200,210.9 230,175.7 260,132.2 290,95 320,80 350,95 380,132.2 410,175.7 440,210.9 470,232.9 500,243.8 530,248.1" fill="none" stroke="#1b2a30" stroke-width="2.4"/>
+  <line x1="320" y1="80" x2="320" y2="250" stroke="#a8823a" stroke-width="2"/>
+  <text x="320" y="72" text-anchor="middle" font-size="12" fill="#a8823a">average = centre (mean)</text>
+  <line x1="250" y1="147" x2="250" y2="250" stroke="#9aa6a0" stroke-width="1.3" stroke-dasharray="4 4"/>
+  <line x1="390" y1="147" x2="390" y2="250" stroke="#9aa6a0" stroke-width="1.3" stroke-dasharray="4 4"/>
+  <line x1="250" y1="262" x2="390" y2="262" stroke="#7e6325" stroke-width="1"/>
+  <polygon points="250,262 258,258 258,266" fill="#7e6325"/><polygon points="390,262 382,258 382,266" fill="#7e6325"/>
+  <text x="320" y="276" text-anchor="middle" font-size="11.5" fill="#7e6325">spread = 1 standard deviation each side</text>
+  <circle cx="110" cy="250" r="4.5" fill="#2f6f6a"/><text x="110" y="238" text-anchor="middle" font-size="11" fill="#235b56">No-fire</text>
+  <circle cx="530" cy="250" r="4.5" fill="#bd5e34"/><text x="530" y="238" text-anchor="middle" font-size="11" fill="#9c4a26">All-fire</text>
+</svg>
+<figcaption>The same information as the S-curve above, drawn as the familiar bell. The
+<strong>average</strong> is the centre; the <strong>spread</strong> is one standard deviation (the
+width). About 2 in 3 parts break within one standard deviation of the average. The
+<strong>no-fire</strong> and <strong>all-fire</strong> heights sit far out on the tails (~3 standard
+deviations). The S-curve is just the "running total" of this bell as height rises, passing through
+50% at the centre.</figcaption>
+</div>
+<a class="top" href="#">↑ top</a>
+
+<!-- ============================================================ -->
+<h2 id="stages">3 · How it works — three stages</h2>
+<div class="stages">
+  <div class="stage"><b>1 · Find the zone.</b> Start near a rough guess and reach further out,
+    roughly doubling the step each time, until you've seen <em>both</em> a break and a survive.
+    Works even if the guess is way off — it just costs a few extra items.</div>
+  <div class="stage"><b>2 · Close the gap.</b> Narrow in between the highest survive and the lowest
+    break, until the results <em>overlap</em> (a lower level breaks while a higher one survived).
+    Until that happens, there isn't yet enough information for a real answer.</div>
+  <div class="stage"><b>3 · Refine.</b> Now a real answer exists. Each remaining test goes at the
+    single most-informative level, sharpening the average and the spread. Stop when the items run
+    out and report the answer with its confidence.</div>
+</div>
+<a class="top" href="#">↑ top</a>
+
+<!-- ============================================================ -->
+<h2 id="clever">4 · Why it tests slightly off-centre</h2>
+<p>The method does <em>not</em> test at its best guess of the average — it tests
+<strong>slightly to the side</strong>. You're after <em>two</em> numbers. The dead-centre
+(even-odds) level is best for pinning the <strong>average</strong>, but tells you nothing about the
+<strong>spread</strong> — you only see how fast "survives" turns into "breaks" by testing out on the
+slope. So it picks the one spot that's the best deal for learning <em>both</em> at once (about 1.14
+standard deviations off centre). That single idea is the whole method — "D-optimal" just means "the
+most informative overall choice."</p>
+<a class="top" href="#">↑ top</a>
+
+<!-- ============================================================ -->
+<h2 id="map">5 · How it fits your drop test</h2>
+<p>Your setup — drop an object from a chosen <strong>height</strong> into a hole in a 3D-printed
+part, and see whether it <strong>breaks</strong> — is exactly what this method is for.</p>
+<div class="fig">
+<svg viewBox="0 0 640 340" role="img" aria-label="An object dropped from a chosen height in millimetres onto a 3D-printed part with a hole; the part breaks or survives.">
+  <line x1="150" y1="315" x2="150" y2="60" stroke="#5c6b71" stroke-width="1.5"/>
+  <g font-size="11" fill="#5c6b71">
+    <line x1="145" y1="315" x2="155" y2="315" stroke="#5c6b71"/><text x="120" y="319">0</text>
+    <line x1="145" y1="264" x2="155" y2="264" stroke="#c9d2cb"/><text x="112" y="268">20</text>
+    <line x1="145" y1="213" x2="155" y2="213" stroke="#c9d2cb"/><text x="112" y="217">40</text>
+    <line x1="145" y1="162" x2="155" y2="162" stroke="#c9d2cb"/><text x="112" y="166">60</text>
+    <line x1="145" y1="111" x2="155" y2="111" stroke="#c9d2cb"/><text x="112" y="115">80</text>
+    <text x="150" y="50" text-anchor="middle" fill="#235b56" font-size="12">height (mm)</text>
+  </g>
+  <circle cx="150" cy="162" r="11" fill="#2f6f6a"/>
+  <text x="172" y="160" font-size="13" fill="#1b2a30">the object you drop</text>
+  <text x="172" y="177" font-size="12" fill="#a8823a">you pick this height &mdash; the one "dial"</text>
+  <line x1="150" y1="178" x2="150" y2="300" stroke="#bd5e34" stroke-width="2" stroke-dasharray="4 4"/>
+  <polygon points="150,312 145,300 155,300" fill="#bd5e34"/>
+  <rect x="108" y="315" width="84" height="20" rx="3" fill="#1b2a30"/>
+  <rect x="143" y="315" width="14" height="9" fill="#fbfcfa"/>
+  <text x="200" y="330" font-size="12.5" fill="#5c6b71">your 3D-printed part (hole on top)</text>
+  <text x="430" y="90" font-size="13" fill="#1b2a30" font-weight="600">Two outcomes</text>
+  <rect x="430" y="105" width="30" height="30" rx="4" fill="#e4efed" stroke="#2f6f6a"/><text x="470" y="124" font-size="13" fill="#235b56">survives &rarr; "0"</text>
+  <rect x="430" y="150" width="30" height="30" rx="4" fill="#f6e7df" stroke="#bd5e34"/><path d="M438 150 L446 165 L440 180" fill="none" stroke="#bd5e34" stroke-width="1.5"/><text x="470" y="169" font-size="13" fill="#9c4a26">breaks &rarr; "1"</text>
+  <text x="430" y="214" font-size="12" fill="#5c6b71">Each part is used once</text>
+  <text x="430" y="230" font-size="12" fill="#5c6b71">(a survivor is already</text>
+  <text x="430" y="246" font-size="12" fill="#5c6b71">damaged &mdash; don't reuse it).</text>
+</svg>
+</div>
+<table>
+  <tr><th>In your lab</th><th>In the method</th></tr>
+  <tr><td>One fresh 3D-printed part</td><td>One test item (used once)</td></tr>
+  <tr><td>The <strong>drop height</strong> you set (mm)</td><td>The "level" — the single dial the method chooses</td></tr>
+  <tr><td>Part <strong>breaks</strong> / <strong>survives</strong></td><td>The yes/no outcome (<code>1</code> = broke, <code>0</code> = survived)</td></tr>
+  <tr><td><em>What you learn</em></td><td>Average breaking height, the spread, and the all-fire / no-fire heights</td></tr>
+</table>
+<a class="top" href="#">↑ top</a>
+
+<!-- ============================================================ -->
+<h2 id="parts">6 · Why more parts help</h2>
+<p>The method gets sharper the more items you spend: every "&plusmn;" shrinks, and the small-sample
+quirk in the spread (section 10) fades. With only a handful the answer is rough and can even fail to
+finish; with a couple of dozen it becomes reliable. Since you can print freely, that's a real
+advantage — spend parts to buy certainty.</p>
+<a class="top" href="#">↑ top</a>
+
+<!-- ============================================================ -->
+<h2 id="start">7 · Finding a starting height (a worked example)</h2>
+<p>You don't need to know where it breaks — the method self-corrects. A rough guess just saves
+items. A quick <strong>ladder</strong> finds one:</p>
+<ol>
+  <li>Drop a spare part from a small height (a few mm). Survived? Go higher.</li>
+  <li>Roughly <strong>double</strong> the height each time — 5, 10, 20, 40, 80 mm — a fresh part
+      each time, until one <strong>breaks</strong>.</li>
+  <li>You now have a rough bracket: the last height that survived and the first that broke.</li>
+</ol>
+<p><em>Example:</em> survivors stop near <strong>40 mm</strong> and the first break is near
+<strong>60 mm</strong> → your starting guess is a low end of 40, a high end of 60, and a rough
+spread of about 5 mm. The method takes it from there.</p>
+<a class="top" href="#">↑ top</a>
+
+<!-- ============================================================ -->
+<h2 id="read">8 · Reading the results (a worked example)</h2>
+<p>The answer comes out as four numbers (example values, in mm):</p>
+<pre>  Average breaking point : 52.00  +/- 1.80
+  Spread (std dev)       :  4.50  +/- 1.40
+  All-fire  (99.9% break)  : 65.90  +/- 4.90
+  No-fire   (99.9% survive): 38.10  +/- 4.90</pre>
+<div class="fig">
+<svg viewBox="0 0 640 130" role="img" aria-label="A drop-height axis split into a safe no-fire zone, an uncertain middle around the average, and an all-fire zone that reliably breaks.">
+  <rect x="40" y="44" width="180" height="26" fill="#e4efed" stroke="#cbe0dc"/>
+  <rect x="220" y="44" width="200" height="26" fill="#eef0ec" stroke="#dde3dd"/>
+  <rect x="420" y="44" width="180" height="26" fill="#f6e7df" stroke="#eccdba"/>
+  <line x1="320" y1="38" x2="320" y2="76" stroke="#a8823a" stroke-width="2"/>
+  <text x="320" y="32" text-anchor="middle" font-size="11.5" fill="#a8823a">average (52 mm)</text>
+  <text x="130" y="61" text-anchor="middle" font-size="12.5" fill="#235b56">No-fire (38 mm)</text>
+  <text x="320" y="61" text-anchor="middle" font-size="12" fill="#5c6b71">uncertain</text>
+  <text x="510" y="61" text-anchor="middle" font-size="12.5" fill="#9c4a26">All-fire (66 mm)</text>
+  <text x="40" y="96" font-size="11.5" fill="#5c6b71">lower drop height</text>
+  <text x="600" y="96" text-anchor="end" font-size="11.5" fill="#5c6b71">higher drop height &rarr;</text>
+</svg>
+</div>
+<ul>
+  <li><strong>Average breaking point</strong> — the height where about half your parts break.</li>
+  <li><strong>Spread</strong> — how much the breaking height varies part to part (your prints'
+      consistency). This is the standard deviation.</li>
+  <li><strong>All-fire</strong> — drop from here (or above) and essentially every part breaks.</li>
+  <li><strong>No-fire</strong> — stay below this and essentially none break (a safe height).</li>
+  <li>Each <strong>+/-</strong> is the confidence: smaller = more certain, and more parts shrink it.</li>
+</ul>
+<a class="top" href="#">↑ top</a>
+
+<!-- ============================================================ -->
+<h2 id="tails">9 · Why the all-fire / no-fire numbers are fuzzier</h2>
+<p>The method places its tests <strong>near the middle</strong> of the bell, because that's where
+each test teaches the most about the <em>whole</em> curve. But the all-fire and no-fire levels are
+far out on the <strong>tails</strong> (~3 standard deviations), where it put <strong>few or no</strong>
+tests. To report them it has to <strong>stretch the fitted bell far beyond where the data actually
+sits</strong> — and any stretch like that is less certain, so those numbers get a
+<strong>wider +/-</strong>.</p>
+<p>A study <em>designed</em> to nail one tail would instead put its tests out near that tail — tighter
+on that one number, but worse at the average and spread. It's a trade-off: this method gives the best
+<em>overall</em> picture, at the cost of slightly fuzzier <em>edges</em>. So always quote all-fire /
+no-fire <strong>with</strong> their +/-, never on their own.</p>
+<a class="top" href="#">↑ top</a>
+
+<!-- ============================================================ -->
+<h2 id="bias">10 · Why "spread" reads a little low on few tests</h2>
+<p>The spread estimate comes out slightly <strong>low</strong> on small samples, by about
+<strong>3.5 &divide; (number of tests)</strong>. First, run from a wildly wrong starting guess
+(true spread = 1.0):</p>
+<div class="fig">
+<svg viewBox="0 0 600 320" role="img" aria-label="Chart: the spread estimate rises toward the true value 1.0 as tests grow, but sits below the theoretical prediction from a bad starting guess.">
+  <line x1="70" y1="77.1" x2="550" y2="77.1" stroke="#e8ece6"/><line x1="70" y1="151.4" x2="550" y2="151.4" stroke="#e8ece6"/>
+  <line x1="70" y1="225.7" x2="550" y2="225.7" stroke="#e8ece6"/><line x1="70" y1="300" x2="550" y2="300" stroke="#c9d2cb"/>
+  <g font-size="12" fill="#5c6b71"><text x="62" y="81" text-anchor="end">1.00</text><text x="62" y="155" text-anchor="end">0.90</text>
+  <text x="62" y="229" text-anchor="end">0.80</text><text x="62" y="304" text-anchor="end">0.70</text>
+  <text x="130" y="318" text-anchor="middle">30</text><text x="250" y="318" text-anchor="middle">40</text><text x="490" y="318" text-anchor="middle">60 tests</text></g>
+  <line x1="70" y1="77.1" x2="550" y2="77.1" stroke="#a8823a" stroke-width="2.5"/><text x="554" y="74" font-size="11" fill="#a8823a">true 1.00</text>
+  <polyline points="130,163.8 250,142.1 490,120.4" fill="none" stroke="#9aa6a0" stroke-width="2" stroke-dasharray="6 5"/>
+  <polyline points="130,253.2 250,176.7 490,135.1" fill="none" stroke="#bd5e34" stroke-width="3"/>
+  <circle cx="130" cy="253.2" r="5" fill="#bd5e34"/><circle cx="250" cy="176.7" r="5" fill="#bd5e34"/><circle cx="490" cy="135.1" r="5" fill="#bd5e34"/>
+</svg>
+<div class="leg"><span><span class="sw" style="border-color:#bd5e34"></span>estimate (bad guess)</span>
+<span><span class="sw" style="border-color:#9aa6a0;border-top-style:dashed"></span>theory predicts</span>
+<span><span class="sw" style="border-color:#a8823a"></span>true 1.00</span></div>
+<figcaption>Biased low — the right direction — and climbing toward the true value as tests grow.</figcaption>
+</div>
+<p>What drives the gap below the theory line? <strong>The starting guess.</strong> The same test,
+run from a bad guess vs a good one:</p>
+<div class="fig">
+<svg viewBox="0 0 600 320" role="img" aria-label="Chart comparing the spread estimate from a good vs bad starting guess against the theoretical prediction and the true value.">
+  <line x1="70" y1="66" x2="550" y2="66" stroke="#e8ece6"/><line x1="70" y1="118" x2="550" y2="118" stroke="#e8ece6"/>
+  <line x1="70" y1="170" x2="550" y2="170" stroke="#e8ece6"/><line x1="70" y1="222" x2="550" y2="222" stroke="#e8ece6"/><line x1="70" y1="274" x2="550" y2="274" stroke="#e8ece6"/>
+  <g font-size="12" fill="#5c6b71"><text x="62" y="70" text-anchor="end">1.00</text><text x="62" y="122" text-anchor="end">0.90</text>
+  <text x="62" y="174" text-anchor="end">0.80</text><text x="62" y="226" text-anchor="end">0.70</text><text x="62" y="278" text-anchor="end">0.60</text>
+  <text x="118" y="300" text-anchor="middle">20</text><text x="310" y="300" text-anchor="middle">40</text><text x="502" y="300" text-anchor="middle">60 tests</text></g>
+  <line x1="70" y1="66" x2="550" y2="66" stroke="#a8823a" stroke-width="2.5"/><text x="554" y="63" font-size="11" fill="#a8823a">true 1.00</text>
+  <polyline points="118,157 310,111.5 502,96.3" fill="none" stroke="#9aa6a0" stroke-width="2" stroke-dasharray="6 5"/>
+  <polyline points="118,112.8 310,92 502,76.4" fill="none" stroke="#2f6f6a" stroke-width="3"/>
+  <circle cx="118" cy="112.8" r="5" fill="#2f6f6a"/><circle cx="310" cy="92" r="5" fill="#2f6f6a"/><circle cx="502" cy="76.4" r="5" fill="#2f6f6a"/>
+  <polyline points="118,274 310,138.8 502,92" fill="none" stroke="#bd5e34" stroke-width="3"/>
+  <circle cx="118" cy="274" r="5" fill="#bd5e34"/><circle cx="310" cy="138.8" r="5" fill="#bd5e34"/><circle cx="502" cy="92" r="5" fill="#bd5e34"/>
+</svg>
+<div class="leg"><span><span class="sw" style="border-color:#2f6f6a"></span>good guess</span>
+<span><span class="sw" style="border-color:#bd5e34"></span>bad guess (off 5&times;)</span>
+<span><span class="sw" style="border-color:#9aa6a0;border-top-style:dashed"></span>theory</span>
+<span><span class="sw" style="border-color:#a8823a"></span>true 1.00</span></div>
+<figcaption>Same method, same maths — only the guess changed. A good guess (teal) lands on the theory
+line; a bad guess (clay) sags below, because early tests are spent just finding the zone.</figcaption>
+</div>
+<p>So it isn't a flaw — a bad guess pays a one-time "search tax," worst when items are few. The fix
+is the same either way: <strong>a reasonable starting guess, and plenty of items.</strong></p>
+<a class="top" href="#">↑ top</a>
+
+<p style="color:#5c6b71;font-size:13.5px;margin-top:34px">That's the concept. For the how-to-run steps
+and adjustable settings, see the <a href="how-to-run-in-matlab.html">MATLAB guide</a>; more pages on
+the <a href="index.html">hub</a>.</p>
+</body>
+</html>

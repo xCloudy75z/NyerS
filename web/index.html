@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NyerS — viewing hub</title>
+<style>
+  body{max-width:820px;margin:0 auto;padding:36px 20px 90px;
+       font:16px/1.6 -apple-system,Segoe UI,Roboto,sans-serif;color:#1b2a30;background:#fbfcfa}
+  h1{font-size:26px;border-bottom:2px solid #a8823a;padding-bottom:8px;margin-bottom:6px}
+  .sub{color:#5c6b71;margin:0 0 18px}
+  h2{font-family:inherit;font-size:13px;letter-spacing:.12em;text-transform:uppercase;
+     color:#7e6325;margin:28px 0 10px}
+  ul{list-style:none;padding:0;margin:0}
+  li{margin:0 0 12px;padding:16px 18px;border:1px solid #dde3dd;border-radius:10px;background:#fff}
+  li.hi{border-color:#e4d6b3;background:#faf6ec}
+  li a{font-size:18px;color:#bd5e34;text-decoration:none;font-weight:600}
+  li a:hover{text-decoration:underline}
+  li .d{display:block;color:#5c6b71;font-size:14px;margin-top:4px}
+  .tag{font-size:11px;color:#235b56;background:#e4efed;border:1px solid #cbe0dc;
+       border-radius:20px;padding:1px 9px;margin-left:6px;vertical-align:middle}
+  .new{background:#faf6ec;border:1px solid #e4d6b3;border-radius:10px;padding:12px 16px;margin:0 0 22px;font-size:14.5px}
+  .new b{color:#7e6325}
+  .new a{color:#bd5e34;font-weight:600}
+  /* collapsible groups keep the page compact */
+  details{border:1px solid #dde3dd;border-radius:10px;background:#fff;margin:0 0 12px}
+  summary{cursor:pointer;padding:14px 18px;font-size:14px;font-weight:600;color:#235b56;
+          letter-spacing:.03em;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"\25B8\00a0\00a0";color:#a8823a}
+  details[open]>summary::before{content:"\25BE\00a0\00a0"}
+  summary .c{color:#9aa6a0;font-weight:400;font-size:13px}
+  details .body{padding:0 18px 10px}
+  .row{padding:10px 0;border-top:1px solid #eef0ec}
+  .row a{color:#bd5e34;text-decoration:none;font-weight:600;font-size:15.5px}
+  .row a:hover{text-decoration:underline}
+  .row .d{display:block;color:#5c6b71;font-size:13.5px;margin-top:3px}
+  footer{margin-top:40px;color:#9aa6a0;font-size:13px;border-top:1px solid #dde3dd;padding-top:16px}
+</style>
+</head>
+<body>
+  <h1>NyerS — viewing hub</h1>
+  <p class="sub">Plain-language guides and project docs for the Neyer sensitivity-test tool.</p>
+
+  <div class="new"><b>New in v1.4:</b> plan your parts before the lab with the
+    <a href="before-you-start.html">pre-lab planner</a>, and run a test through pop-ups.
+    See the <a href="changelog.html">version log</a> for what each release added.</div>
+
+  <h2>Start here</h2>
+  <ul>
+    <li class="hi">
+      <a href="the-method-explained.html">★ How the method works &amp; why it's trustworthy — the full explanation</a>
+      <span class="d">A complete, plain-language walkthrough (for the instructor): the question, the two numbers, the safe/sure-break heights, how the tool decides what to test, a worked drop-test example, and the evidence the answers are correct.</span>
+    </li>
+    <li class="hi">
+      <a href="complete-guide.html">★ The complete guide — everything on one page</a>
+      <span class="d">All of it in a single scroll: what it is, the bell curve, how it maps to your drop test, running it, reading results, and what to tell your instructor.</span>
+    </li>
+    <li>
+      <a href="what-it-does.html">What this method does</a>
+      <span class="d">The whole idea in plain words, with a picture. No maths.</span>
+    </li>
+    <li>
+      <a href="how-it-flows.html">How it works — inputs, stations, outputs</a>
+      <span class="d">A boxes-and-arrows flow map: what you feed in, the stations it passes through, what you get back.</span>
+    </li>
+    <li>
+      <a href="how-to-run-in-matlab.html">How to run it in MATLAB (or free Octave)</a>
+      <span class="d">Colleague-proof step-by-step: get the files, the one setup line, self-check, run your own test, read the answer.</span>
+    </li>
+    <li class="hi">
+      <a href="before-you-start.html">▶ Before you start — parts &amp; first height</a>
+      <span class="d">Pre-lab planner: enter your guess + the reliability/confidence you want, get how many parts to prepare and where to begin. Printable, works on your phone.</span>
+    </li>
+  </ul>
+
+  <h2>Everything else</h2>
+
+  <details>
+    <summary>More guides &amp; explainers <span class="c">— your drop test, results, confidence, reliability, validation</span></summary>
+    <div class="body">
+      <div class="row"><a href="your-drop-test.html">Using the tool for your drop test</a><span class="d">How your height-drop / break-or-not experiment maps to the method, and finding a starting height.</span></div>
+      <div class="row"><a href="starting-guesses.html">Your two starting guesses — a worked example</a><span class="d">What your average-range guess and your spread guess mean, with pictures and a drop-test example.</span></div>
+      <div class="row"><a href="reading-results.html">Reading your results</a><span class="d">What average, spread, all-fire and no-fire mean for your parts, and what the "±" tells you.</span></div>
+      <div class="row"><a href="reading-confidence.html">Reading the confidence ranges</a><span class="d">What "95% confident between X and Y" means, with an annotated bell curve.</span></div>
+      <div class="row"><a href="reliability-calculator.html">The reliability calculator</a><span class="d">Height / reliability / confidence — give any two, get the third. The two modes and the sample-size planner.</span></div>
+      <div class="row"><a href="a4-bias.html">Why "spread" reads a little low on few tests</a><span class="d">Charts of what the tool does, why a bad starting guess causes it, and why more parts fix it.</span></div>
+      <div class="row"><a href="how-we-know.html">How we know the tool is right</a><span class="d">The validation story: your tool, an independent fitter, and Neyer's paper all land on the same answer.</span></div>
+      <div class="row"><a href="future-directions.html">Ideas to explore next (for your instructor)</a><span class="d">Optional next steps left out: a tail-targeted (3POD) design and a confidence-region plot.</span></div>
+    </div>
+  </details>
+
+  <details>
+    <summary>The family of methods <span class="c">— Bruceton → Neyer → 3POD, paper by paper</span></summary>
+    <div class="body">
+      <div class="row"><a href="family.html">★ The family, in one page</a><span class="d">The lineage overview — start here, then the dedicated paper pages below.</span></div>
+      <div class="row"><a href="paper-bruceton.html">1948 · The staircase method (Bruceton)</a><span class="d">Dixon &amp; Mood — the no-computer ancestor.</span></div>
+      <div class="row"><a href="paper-neyer.html">1994 · Neyer — the D-optimal method</a><span class="d">The one you're using.</span></div>
+      <div class="row"><a href="paper-dror-steinberg.html">2008 · Clever from the first test</a><span class="d">Dror &amp; Steinberg.</span></div>
+      <div class="row"><a href="paper-3pod.html">2014 · 3POD — search, estimate, approximate</a><span class="d">Wu &amp; Tian — built for far-tail levels.</span></div>
+      <div class="row"><a href="paper-comparison-2014.html">2014 · Neyer vs. 3POD, head to head</a><span class="d">Ray, Roediger &amp; Neyer.</span></div>
+      <div class="row"><a href="paper-3pod2.html">2020 · 3POD2.0 &amp; Sen-Test</a><span class="d">Wang, Tian &amp; Wu — the bake-off + upgrades.</span></div>
+      <div class="row"><a href="paper-gonogo.html">2020 · gonogo — free R software</a><span class="d">Independent second opinion.</span></div>
+      <div class="row"><a href="paper-reallab-2024.html">2024 · A real-lab comparison</a><span class="d">Impact testing on real specimens.</span></div>
+      <div class="row"><a href="paper-senpy.html">senpy — free Python software</a><span class="d">Neyer's method in Python.</span></div>
+    </div>
+  </details>
+
+  <details>
+    <summary>Version log &amp; build docs <span class="c">— release history and design specs</span></summary>
+    <div class="body">
+      <div class="row"><a href="changelog.html">Version log — what each release added</a><span class="d">v1.0 → v1.4 timeline, with the unchanged acceptance gate.</span></div>
+      <div class="row"><a href="B1-spec-review.html">B1 — tail-quantile design spec <span class="tag">shipped</span></a><span class="d">The agreed design for the all-fire / no-fire levels.</span></div>
+      <div class="row"><a href="B1-plan.html">B1 — implementation plan</a><span class="d">The test-first build plan.</span></div>
+      <div class="row"><a href="lr-confidence-spec.html">LR-confidence + chart — design spec <span class="tag">shipped</span></a><span class="d">The SenTest-style confidence bounds and result chart.</span></div>
+    </div>
+  </details>
+
+  <footer>Published from <code>web/</code> via GitHub Actions · repo xCloudy75z/NyerS</footer>
+</body>
+</html>

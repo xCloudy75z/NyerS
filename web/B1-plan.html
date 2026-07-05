@@ -1,0 +1,269 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>B1 Implementation Plan</title><style>
+body{max-width:820px;margin:0 auto;padding:28px 20px 80px;font:16px/1.6 -apple-system,Segoe UI,Roboto,sans-serif;color:#1b2a30;background:#fbfcfa}
+h1{font-size:26px;border-bottom:2px solid #a8823a;padding-bottom:8px}
+h2{font-size:20px;margin-top:32px;color:#235b56}
+h3{font-size:17px;color:#7e6325}
+code{background:#eef0ec;padding:1px 5px;border-radius:4px;font-size:13px}
+pre{background:#1b2a30;color:#eef0ec;padding:14px;border-radius:8px;overflow:auto;font-size:12.5px;line-height:1.45}
+pre code{background:none;color:inherit;padding:0}
+table{border-collapse:collapse;width:100%;margin:12px 0}
+th,td{border:1px solid #dde3dd;padding:6px 10px;text-align:left;font-size:14px}
+th{background:#f1e9d8}
+blockquote{border-left:4px solid #a8823a;margin:12px 0;padding:4px 16px;color:#5c6b71;background:#f6f7f4}
+hr{border:none;border-top:1px solid #dde3dd;margin:24px 0}
+a{color:#bd5e34}
+input[type=checkbox]{margin-right:6px}
+.back{display:inline-block;margin-bottom:16px;color:#235b56;text-decoration:none;font-size:14px}
+</style></head><body><a class="back" href="index.html">&larr; back to hub</a><h1 id="b1-tail-quantile-all-fire-no-fire-implementation-plan">B1 — Tail-quantile (all-fire / no-fire) Implementation Plan</h1>
+<blockquote>
+<p><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (<code>- [ ]</code>) syntax for tracking.</p>
+</blockquote>
+<p><strong>Goal:</strong> Add an all-fire (<code>μ+k·σ</code>) and no-fire (<code>μ−k·σ</code>) tail level, each with a delta-method ± confidence, to the report (worker #9), with an adjustable strictness (default 99.9%).</p>
+<p><strong>Architecture:</strong> Additive only. The "fraction → level" step is an inverse (quantile) mode added to <code>shape_model</code> (#1), keeping all bell-curve maths in one file. <code>report</code> (#9) reuses the information matrix it already computes for the ± figures. Nothing the Table-1 gate depends on changes — the two swap-points stay sacred (#1 gains an inverse; #6 untouched).</p>
+<p><strong>Tech Stack:</strong> MATLAB / Octave, base functions only (<code>erfinv</code>, <code>erfc</code>) — no toolboxes. Verified in both Octave 11.3.0 and MATLAB R2022b.</p>
+<p><strong>Spec:</strong> <code>docs/superpowers/specs/2026-07-01-b1-tail-quantile-design.md</code></p>
+<p><strong>Conventions in this repo:</strong> each test is a function file with a local <code>check(got,want,tol,label,pass)</code> helper; it prints <code>ok</code>/<code>FAIL</code> per line and <code>error(...)</code>s at the end if any failed. All new code carries plain-language comments in the existing style (the owner is non-technical and reads comments, not just code).</p>
+<p><strong>Run commands</strong> (this machine; adjust the octave path if it moves):
+- One test: <code>&amp; "C:\Users\games\AppData\Local\Programs\GNU Octave\Octave-11.3.0\mingw64\bin\octave-cli.exe" --norc --quiet --eval "cd 'C:/Users/games/Documents/Neyen'; addpath('config','src/math','src/logic','src/workflow','tests'); &lt;testname&gt;"</code>
+- Full suite: <code>&amp; "C:\Users\games\AppData\Local\Programs\GNU Octave\Octave-11.3.0\mingw64\bin\octave-cli.exe" --norc --quiet --eval "cd 'C:/Users/games/Documents/Neyen'; addpath('tests'); run_all_tests"</code></p>
+<hr />
+<h2 id="file-structure">File Structure</h2>
+<ul>
+<li><strong>Modify</strong> <code>src/math/shape_model.m</code> — add inverse (quantile) mode; forward path untouched.</li>
+<li><strong>Modify</strong> <code>config/settings.m</code> — add <code>tail_fraction</code> constant.</li>
+<li><strong>Modify</strong> <code>src/workflow/report.m</code> — compute/return/print the two tail levels.</li>
+<li><strong>Modify</strong> <code>tests/test_shape_model.m</code> — cover the inverse mode.</li>
+<li><strong>Modify</strong> <code>tests/test_report.m</code> — cover the tail levels + delta-method ±.</li>
+<li><strong>Modify</strong> <code>tests/run_all_tests.m</code> — fix the stale "9 watchdogs" summary line.</li>
+</ul>
+<hr />
+<h2 id="task-1-inverse-quantile-mode-in-shape_model-1">Task 1: Inverse (quantile) mode in <code>shape_model</code> (#1)</h2>
+<p><strong>Files:</strong>
+- Modify: <code>src/math/shape_model.m</code>
+- Test: <code>tests/test_shape_model.m</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Write the failing tests.</strong> In <code>tests/test_shape_model.m</code>, insert this block immediately <strong>before</strong> the final <code>if pass</code> block (after the Case 5 lines):</li>
+</ul>
+<pre><code class="language-matlab">    % --- Case 6: inverse (quantile) mode, z = shape_model(p,'quantile') ----
+    % Given a probability, return how many spreads from centre it is.
+    pass = check(shape_model(0.5,   'quantile'),  0.0,          tol, 'inv 0.5  -&gt; 0',   pass);
+    pass = check(shape_model(0.999, 'quantile'),  3.0902323062, tol, 'inv 0.999 -&gt; k',  pass);
+    pass = check(shape_model(0.001, 'quantile'), -3.0902323062, tol, 'inv 0.001 -&gt; -k', pass);
+
+    % Round-trip: feeding z back through the forward path returns the same p.
+    zt = shape_model(0.9, 'quantile');
+    st = shape_model(zt, 0, 1);                 % assign first (MATLAB-safe indexing)
+    pass = check(st.Phi, 0.9, tol, 'round-trip Phi(z)=p', pass);
+
+    % Out-of-range probabilities must be refused.
+    threw = false; try, shape_model(0, 'quantile'); catch, threw = true; end
+    pass = check(double(threw), 1, 0, 'inv p&lt;=0 errors', pass);
+    threw = false; try, shape_model(1, 'quantile'); catch, threw = true; end
+    pass = check(double(threw), 1, 0, 'inv p&gt;=1 errors', pass);
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Run the test to verify it fails.</strong></li>
+</ul>
+<p>Run: <code>&amp; "C:\Users\games\AppData\Local\Programs\GNU Octave\Octave-11.3.0\mingw64\bin\octave-cli.exe" --norc --quiet --eval "cd 'C:/Users/games/Documents/Neyen'; addpath('config','src/math','src/logic','src/workflow','tests'); test_shape_model"</code>
+Expected: FAIL — <code>shape_model(0.5,'quantile')</code> errors (only 2 args, <code>mu</code> is a char) or returns wrong value.</p>
+<ul>
+<li>[ ] <strong>Step 3: Implement the inverse mode.</strong> In <code>src/math/shape_model.m</code>, insert this block at the very top of the function body, immediately <strong>before</strong> the line <code>% Spread must be positive — z divides by it.</code>:</li>
+</ul>
+<pre><code class="language-matlab">    % --- Inverse (quantile) mode: z = shape_model(p, 'quantile') ----------
+    % Given a probability p in (0,1), return the standardised level z with
+    % Phi(z) = p. This is the exact inverse of the forward Phi computed below,
+    % so ALL bell-curve maths stays in this one file (the shape swap-point).
+    % erfinv is a base function in both Octave and MATLAB (no toolbox).
+    % Used by report (#9) to turn a strictness like 99.9% into a distance.
+    % [addendum B1; RECOMMENDATION for the log-of-one-file route]
+    if nargin == 2 &amp;&amp; ischar(mu)
+        if ~strcmpi(mu, 'quantile')
+            error('shape_model:badMode', ...
+                  'Unknown mode &quot;%s&quot;; the only extra mode is ''quantile''.', mu);
+        end
+        p = x;
+        if ~isreal(p) || any(~isfinite(p(:))) || any(p(:) &lt;= 0) || any(p(:) &gt;= 1)
+            error('shape_model:badProb', ...
+                  'quantile probability must be real and strictly inside (0,1).');
+        end
+        s = sqrt(2) .* erfinv(2 .* p - 1);     % z such that Phi(z) = p
+        return;
+    end
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 4: Run the test to verify it passes.</strong></li>
+</ul>
+<p>Run: (same command as Step 2)
+Expected: PASS — <code>shape_model: ALL CHECKS PASSED</code>, including the six new Case 6 lines.</p>
+<ul>
+<li>[ ] <strong>Step 5: Commit.</strong></li>
+</ul>
+<pre><code class="language-bash">git add src/math/shape_model.m tests/test_shape_model.m
+git commit -m &quot;B1: add inverse (quantile) mode to shape_model (#1)&quot;
+</code></pre>
+<hr />
+<h2 id="task-2-add-the-tail_fraction-constant-to-settings">Task 2: Add the <code>tail_fraction</code> constant to settings</h2>
+<p><strong>Files:</strong>
+- Modify: <code>config/settings.m</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Add the constant.</strong> In <code>config/settings.m</code>, insert immediately <strong>after</strong> the line <code>s.enforce_positive_sigma = true;       % RECOMMENDATION (reparameterise / constrain)</code> and <strong>before</strong> the final <code>end</code>:</li>
+</ul>
+<pre><code class="language-matlab">
+    % --- Tail-quantile reporting (addendum B1) ------------------------------
+    % report (#9) also prints two tail levels: the all-fire level, where this
+    % fraction of items break, and the no-fire level, where this fraction
+    % survive. Neyer usually uses 99.9% (some use 99.99% / 99.9999%), so this
+    % is an adjustable dial, not a hard-wired number. brief App.B / addendum B1.
+    s.tail_fraction = 0.999;               % PAPER (all-fire ~99.9% definition); 0.999 default RECOMMENDATION
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Verify it loads.</strong></li>
+</ul>
+<p>Run: <code>&amp; "C:\Users\games\AppData\Local\Programs\GNU Octave\Octave-11.3.0\mingw64\bin\octave-cli.exe" --norc --quiet --eval "cd 'C:/Users/games/Documents/Neyen'; addpath('config'); s = settings(); printf('%.4f\n', s.tail_fraction)"</code>
+Expected: prints <code>0.9990</code>.</p>
+<ul>
+<li>[ ] <strong>Step 3: Commit.</strong></li>
+</ul>
+<pre><code class="language-bash">git add config/settings.m
+git commit -m &quot;B1: add adjustable tail_fraction (default 99.9%) to settings&quot;
+</code></pre>
+<hr />
+<h2 id="task-3-compute-return-and-print-the-tail-levels-in-report-9">Task 3: Compute, return, and print the tail levels in <code>report</code> (#9)</h2>
+<p><strong>Files:</strong>
+- Modify: <code>src/workflow/report.m</code>
+- Test: <code>tests/test_report.m</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Write the failing tests.</strong> In <code>tests/test_report.m</code>, insert this block immediately <strong>after</strong> the Banerjee section (after the <code>'se_sigma near Banerjee'</code> line) and <strong>before</strong> the <code>% --- No-overlap case</code> comment:</li>
+</ul>
+<pre><code class="language-matlab">    % --- Tail levels: all-fire / no-fire (addendum B1) --------------------
+    % k recomputed independently here so the test does not trust report's own k.
+    k = sqrt(2) * erfinv(2*cfg.tail_fraction - 1);
+    pass = check(r.tail_k,   k,                1e-9, 'tail_k = Phi^{-1}(p)',    pass);
+    pass = check(r.all_fire, r.mu + k*r.sigma, 1e-9, 'all_fire = mu + k*sigma', pass);
+    pass = check(r.no_fire,  r.mu - k*r.sigma, 1e-9, 'no_fire  = mu - k*sigma', pass);
+
+    % Paper-anchored hand-check: final fit ~5.39/1.04 forces ~8.61 / ~2.17.
+    pass = check(r.all_fire, 8.61, 0.05, 'all_fire ~ 8.61 (paper fit)', pass);
+    pass = check(r.no_fire,  2.17, 0.05, 'no_fire  ~ 2.17 (paper fit)', pass);
+
+    % Delta-method +/-, recomputed independently from the information matrix.
+    [j0,j1,j2] = info_terms(rec.levels, r.mu, r.sigma);
+    I00 = sum(j0); I01 = sum(j1); I11 = sum(j2); detI = I00*I11 - I01^2;
+    cov_ms = -I01 / detI;
+    se_all_ref = sqrt(r.var_mu + k^2*r.var_sigma + 2*k*cov_ms);
+    se_no_ref  = sqrt(r.var_mu + k^2*r.var_sigma - 2*k*cov_ms);
+    pass = check(r.se_all_fire, se_all_ref, 1e-6, 'se_all_fire delta-method', pass);
+    pass = check(r.se_no_fire,  se_no_ref,  1e-6, 'se_no_fire  delta-method', pass);
+</code></pre>
+<p>Then, in the same file, add one line inside the no-overlap section, immediately <strong>after</strong> the existing <code>'no overlap -&gt; mu NaN'</code> check line:</p>
+<pre><code class="language-matlab">    pass = check(double(isnan(rn.all_fire)), 1, 0, 'no overlap -&gt; all_fire NaN', pass);
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Run the test to verify it fails.</strong></li>
+</ul>
+<p>Run: <code>&amp; "C:\Users\games\AppData\Local\Programs\GNU Octave\Octave-11.3.0\mingw64\bin\octave-cli.exe" --norc --quiet --eval "cd 'C:/Users/games/Documents/Neyen'; addpath('config','src/math','src/logic','src/workflow','tests'); test_report"</code>
+Expected: FAIL — <code>r.tail_k</code> / <code>r.all_fire</code> are missing fields (or <code>rn.all_fire</code> does not exist).</p>
+<ul>
+<li>[ ] <strong>Step 3a: Add the tail fields to the result struct.</strong> In <code>src/workflow/report.m</code>, replace the initial struct:</li>
+</ul>
+<pre><code class="language-matlab">    result = struct('mu', NaN, 'sigma', NaN, ...
+                    'var_mu', NaN, 'var_sigma', NaN, ...
+                    'se_mu', NaN, 'se_sigma', NaN, ...
+                    'has_overlap', false, 'n', n);
+</code></pre>
+<p>with (adds six tail fields, defaulted to NaN so the no-overlap early return still carries them):</p>
+<pre><code class="language-matlab">    result = struct('mu', NaN, 'sigma', NaN, ...
+                    'var_mu', NaN, 'var_sigma', NaN, ...
+                    'se_mu', NaN, 'se_sigma', NaN, ...
+                    'tail_fraction', NaN, 'tail_k', NaN, ...
+                    'all_fire', NaN, 'se_all_fire', NaN, ...
+                    'no_fire', NaN, 'se_no_fire', NaN, ...
+                    'has_overlap', false, 'n', n);
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 3b: Compute the tail levels.</strong> In <code>src/workflow/report.m</code>, insert this block immediately <strong>after</strong> the line <code>result.se_sigma  = sqrt(var_sigma);</code> and <strong>before</strong> the <code>fprintf('\n=== Neyer sensitivity test: RESULT</code> line:</li>
+</ul>
+<pre><code class="language-matlab">    % --- Tail levels: all-fire / no-fire (addendum B1) --------------------
+    % all-fire  = the level where cfg.tail_fraction of items BREAK.
+    % no-fire   = the level where that same fraction SURVIVE.
+    % The +/- figures come from the delta method on quantities already
+    % computed above (Eqs.5-6 plus the 2x2 inverse: cov(mu,sigma) = -I01/det).
+    % No new estimation machinery -- just post-processing. [PAPER for q=mu+k*sigma
+    % and its variance; RECOMMENDATION for surfacing it]
+    p_tail = cfg.tail_fraction;
+    k      = shape_model(p_tail, 'quantile');   % how many spreads out (worker #1)
+    cov_ms = -I01 / detI;                         % covariance of mu-hat and sigma-hat
+    var_all = var_mu + k^2 * var_sigma + 2*k * cov_ms;
+    var_no  = var_mu + k^2 * var_sigma - 2*k * cov_ms;
+
+    result.tail_fraction = p_tail;
+    result.tail_k        = k;
+    result.all_fire      = mu + k * sigma;
+    result.no_fire       = mu - k * sigma;
+    result.se_all_fire   = sqrt(max(var_all, 0)); % max(.,0) guards tiny numeric negatives
+    result.se_no_fire    = sqrt(max(var_no,  0));
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 3c: Print the tail levels.</strong> In <code>src/workflow/report.m</code>, replace the closing print lines:</li>
+</ul>
+<pre><code class="language-matlab">    fprintf('  Spread (std dev)       : %.4f  +/- %.4f (1 std err)\n', sigma, result.se_sigma);
+    fprintf('\n');
+</code></pre>
+<p>with:</p>
+<pre><code class="language-matlab">    fprintf('  Spread (std dev)       : %.4f  +/- %.4f (1 std err)\n', sigma, result.se_sigma);
+    pct = 100 * p_tail;
+    fprintf('  All-fire  (%.4g%% break)  : %.4f  +/- %.4f\n', pct, result.all_fire, result.se_all_fire);
+    fprintf('  No-fire   (%.4g%% survive): %.4f  +/- %.4f\n', pct, result.no_fire,  result.se_no_fire);
+    fprintf('  Note: a D-optimal test is not tuned for the far tails, so these\n');
+    fprintf('        carry wider uncertainty than a purpose-built tail study would.\n');
+    fprintf('\n');
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 4: Run the test to verify it passes.</strong></li>
+</ul>
+<p>Run: (same command as Step 2)
+Expected: PASS — <code>report: ALL CHECKS PASSED</code>, including the new tail lines.</p>
+<ul>
+<li>[ ] <strong>Step 5: Run the FULL suite — Table 1 must still be green.</strong></li>
+</ul>
+<p>Run: <code>&amp; "C:\Users\games\AppData\Local\Programs\GNU Octave\Octave-11.3.0\mingw64\bin\octave-cli.exe" --norc --quiet --eval "cd 'C:/Users/games/Documents/Neyen'; addpath('tests'); run_all_tests"</code>
+Expected: acceptance test still passes (headline 5.39 / 1.04, all levels, all running estimates); every watchdog passes.</p>
+<ul>
+<li>[ ] <strong>Step 6: Commit.</strong></li>
+</ul>
+<pre><code class="language-bash">git add src/workflow/report.m tests/test_report.m
+git commit -m &quot;B1: report all-fire/no-fire tail levels with delta-method confidence&quot;
+</code></pre>
+<hr />
+<h2 id="task-4-tidy-the-run_all_tests-summary-count">Task 4: Tidy the <code>run_all_tests</code> summary count</h2>
+<p><strong>Files:</strong>
+- Modify: <code>tests/run_all_tests.m</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Fix the stale summary line.</strong> In <code>tests/run_all_tests.m</code>, replace:</li>
+</ul>
+<pre><code class="language-matlab">        fprintf('ALL TESTS PASSED (9 watchdogs + acceptance)\n');
+</code></pre>
+<p>with:</p>
+<pre><code class="language-matlab">        fprintf('ALL TESTS PASSED (9 worker watchdogs + addendum A1/A2/A3/A4 + acceptance)\n');
+</code></pre>
+<ul>
+<li>[ ] <strong>Step 2: Run the full suite.</strong></li>
+</ul>
+<p>Run: <code>&amp; "C:\Users\games\AppData\Local\Programs\GNU Octave\Octave-11.3.0\mingw64\bin\octave-cli.exe" --norc --quiet --eval "cd 'C:/Users/games/Documents/Neyen'; addpath('tests'); run_all_tests"</code>
+Expected: <code>ALL TESTS PASSED (9 worker watchdogs + addendum A1/A2/A3/A4 + acceptance)</code>.</p>
+<ul>
+<li>[ ] <strong>Step 3: Commit and push.</strong></li>
+</ul>
+<pre><code class="language-bash">git add tests/run_all_tests.m
+git commit -m &quot;B1: refresh run_all_tests summary count&quot;
+git push origin claude/add-file-to-repo-0lhx6b
+</code></pre>
+<hr />
+<h2 id="definition-of-done">Definition of done</h2>
+<ul>
+<li>All four tasks committed; suite green in Octave 11.3.0 and MATLAB R2022b.</li>
+<li>Table 1 acceptance gate unchanged (5.39 / 1.04, all levels, all running estimates).</li>
+<li>New checks pass: inverse round-trips; <code>all_fire</code>/<code>no_fire</code> match <code>μ±k·σ</code> exactly and the ~8.61 / ~2.17 paper anchor; the ± figures match an independent delta-method recompute.</li>
+<li><code>report</code> prints the two tail lines with the caveat.</li>
+<li><strong>Then (separate step):</strong> confirm the whole thing runs in real MATLAB on the owner's REMOTE 2 PC, and hand over a plain-language "how to run in MATLAB" guide.</li>
+</ul></body></html>

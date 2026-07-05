@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The smart-placement method (Neyer, 1994)</title><link rel="stylesheet" href="papers.css"></head>
+<body>
+<a class="back" href="family.html">&larr; the family</a>
+<div class="year">1994 · the one you're using</div>
+<h1>The smart-placement method (Neyer, D-optimal)</h1>
+<p class="auth">Barry T. Neyer</p>
+<div class="cite">Neyer, B. T. (1994). "A D-Optimality-Based Sensitivity Test." <em>Technometrics</em>, 36(1), 61–70.</div>
+
+<h2>The problem</h2>
+<p>The staircase wastes items when your starting guess is off, and isn't good at measuring the
+<em>spread</em> of breaking points. Can we do better on both at once?</p>
+
+<h2>What it added</h2>
+<p>Instead of fixed steps, it chooses each next test at the level that <strong>teaches the most</strong>,
+given everything seen so far. It self-corrects from a wildly wrong start, and it is built to pin down
+<strong>both</strong> the average breaking point <em>and</em> the spread. That clever placement step is
+what first required a computer. (It's the method the rest of this site is about — see the
+<a href="complete-guide.html">concept guide</a>.)</p>
+
+<h2>Its weakness</h2>
+<p>It's weaker when you specifically want a <em>far-extreme</em> level — the point where, say, 99.9%
+break — rather than the overall picture. That gap is exactly what the later methods target.</p>
+
+<div class="analogy"><b>Think of it as:</b> a searcher who, after each "warmer / colder", doesn't just
+step a fixed distance — they move to wherever the next clue will be most revealing, and they close in
+even from a bad first guess.</div>
+
+<div class="relate"><b>How it connects to your drop test:</b> this is your method. It picks each drop
+height for you, self-corrects from your rough guess, and returns the average breaking height and the
+spread. The "all-fire / no-fire" tail numbers are the far-extreme levels where it's a little less
+certain — which is why the 2014 methods below exist.</div>
+
+<div class="access">Access · <span class="free">you have this PDF</span> — the single source of truth for the build.</div>
+<div class="note">This one is already covered in depth across the site; the <a href="complete-guide.html">concept guide</a> is the plain-language deep dive.</div>
+</body></html>

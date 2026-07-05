@@ -1,0 +1,162 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LR-confidence design spec</title><style>
+body{max-width:820px;margin:0 auto;padding:28px 20px 80px;font:16px/1.6 -apple-system,Segoe UI,Roboto,sans-serif;color:#1b2a30;background:#fbfcfa}
+h1{font-size:26px;border-bottom:2px solid #a8823a;padding-bottom:8px}
+h2{font-size:20px;margin-top:30px;color:#235b56}
+h3{font-size:16px;color:#7e6325}
+code{background:#eef0ec;padding:1px 5px;border-radius:4px;font-size:13px}
+pre{background:#1b2a30;color:#eef0ec;padding:14px;border-radius:8px;overflow:auto;font-size:12.5px;line-height:1.5}
+pre code{background:none;color:inherit;padding:0}
+table{border-collapse:collapse;width:100%;margin:12px 0}
+th,td{border:1px solid #dde3dd;padding:6px 10px;text-align:left;font-size:14px}
+th{background:#f1e9d8}
+blockquote{border-left:4px solid #a8823a;margin:12px 0;padding:4px 16px;color:#5c6b71;background:#f6f7f4}
+hr{border:none;border-top:1px solid #dde3dd;margin:22px 0}
+a{color:#bd5e34}
+.back{display:inline-block;margin-bottom:16px;color:#235b56;text-decoration:none;font-size:14px}
+</style></head><body><a class="back" href="index.html">&larr; hub</a><h1 id="likelihood-ratio-confidence-result-visualization-design-spec">Likelihood-Ratio confidence + result visualization — Design Spec</h1>
+<ul>
+<li><strong>Date:</strong> 2026-07-01</li>
+<li><strong>Status:</strong> approved in brainstorming (owner, 2026-07-01)</li>
+<li><strong>Motivation:</strong> the owner's instructor points to <strong>SenTest</strong> (Neyer Software LLC's commercial
+  tool), which reports <strong>confidence</strong> on the breakpoint via the <strong>Likelihood-Ratio (LR)</strong> method,
+  and frames acceptance as <em>reliability at a confidence level</em> (e.g. "99.9% break at 95% confidence").
+  Our tool currently reports only a rough ± (delta method). This adds the accurate LR method, a
+  <strong>plain-language detailed report</strong>, and a <strong>visual normal-distribution chart</strong> of the result.</li>
+<li><strong>Cadence:</strong> additive only; two swap-points (#1 <code>shape_model</code>, #6 <code>choose_stage</code>) and the Table 1
+  acceptance gate stay untouched. Source-tag everything. Base MATLAB/Octave functions only.</li>
+</ul>
+<hr />
+<h2 id="1-decisions-settled-in-brainstorming">1. Decisions settled in brainstorming</h2>
+<ol>
+<li><strong>Scope:</strong> LR confidence on <strong>all three</strong> — the average, the spread, and the tail levels
+   (all-fire / no-fire).</li>
+<li><strong>Bound type:</strong> <strong>one-sided</strong> bounds on the tail levels (the safety-relevant side, matching the
+   spec wording); <strong>two-sided</strong> intervals on the average and spread.</li>
+<li><strong>Confidence dial:</strong> adjustable, <strong>default 0.95</strong> (industry standard), one tagged constant.</li>
+<li><strong>Report:</strong> <strong>detailed and jargon-free</strong> — explains every number in plain words (no bare "95% CI").</li>
+<li><strong>Chart:</strong> the tool <strong>draws a normal-distribution chart of the owner's own result</strong> in MATLAB
+   (savable as an image), <strong>plus</strong> a hub explainer page with an annotated example.</li>
+</ol>
+<h2 id="2-the-method-plain-terms-the-maths">2. The method (plain terms + the maths)</h2>
+<p>The rough ± assumes symmetric wobble. The <strong>Likelihood-Ratio</strong> method instead keeps every candidate
+value that still explains the data almost as well as the best fit, drawing the boundary at a precise
+statistical threshold. It is more accurate for the spread, for the far tails, and at small samples —
+and it is what SenTest uses.</p>
+<p><strong>Log-likelihood</strong> (already used by <code>best_fit</code>):
+<code>L(mu,sigma) = sum_break ln Phi(z) + sum_survive ln Q(z)</code>, <code>z=(x-mu)/sigma</code>. Let <code>Lmax = L(muhat,sigmahat)</code>.</p>
+<p><strong>Thresholds</strong> (from the normal quantile — no toolbox; <code>zc = shape_model(p,'quantile')</code>):
+- two-sided at confidence C: <code>c2 = shape_model((1+C)/2,'quantile')^2</code>  (C=0.95 → 1.9600² = 3.8415)
+- one-sided at confidence C: <code>c1 = shape_model(C,'quantile')^2</code>        (C=0.95 → 1.6449² = 2.7055)</p>
+<p><strong>Profile-likelihood bounds</strong> — a value is inside the interval while <code>2*(Lmax - Lprofile) &lt;= threshold</code>:
+- <strong>Average (two-sided):</strong> profile <code>pμ(m) = max over sigma&gt;0 of L(m,sigma)</code>. Find the two <code>m</code> around
+  <code>muhat</code> where <code>2*(Lmax - pμ(m)) = c2</code>.
+- <strong>Spread (two-sided):</strong> profile <code>pσ(s) = max over mu of L(mu,s)</code>. Find the two <code>s</code> around <code>sigmahat</code>
+  where <code>2*(Lmax - pσ(s)) = c2</code> (keep <code>s&gt;0</code>).
+- <strong>All-fire level (one-sided upper):</strong> <code>k = shape_model(tail_fraction,'quantile')</code>, level <code>q=mu+k*sigma</code>.
+  Profile <code>pq(q)=max over sigma&gt;0 of L(q-k*sigma, sigma)</code>. Upper bound = the <code>q &gt; qhat</code> where
+  <code>2*(Lmax - pq(q)) = c1</code>.
+- <strong>No-fire level (one-sided lower):</strong> level <code>q=mu-k*sigma</code>; profile <code>pq(q)=max over sigma of L(q+k*sigma,sigma)</code>.
+  Lower bound = the <code>q &lt; qhat</code> where <code>2*(Lmax - pq(q)) = c1</code>.</p>
+<p><strong>Solvers (base functions):</strong> inner maximisation over <code>sigma</code> uses <code>fminbnd</code>/<code>fminsearch</code> on
+<code>log sigma</code> (positivity, as <code>best_fit</code> already does). Outer root — expand a bracket outward from the
+estimate until the LR statistic crosses the threshold (with a sanity cap of a few tested-range widths),
+then bisect to tolerance.</p>
+<p><strong>Graceful failure:</strong> if there is no overlap (MLE undefined) all bounds are <code>NaN</code>; if a particular
+bound cannot be bracketed within the cap, that bound is <code>NaN</code> and the report says "not available"
+(never a fabricated number).</p>
+<h2 id="3-components-all-additive">3. Components (all additive)</h2>
+<h3 id="31-srcmathloglikm-new-shared-helper">3.1 <code>src/math/loglik.m</code> (new shared helper)</h3>
+<p>The log-likelihood in ONE place (like <code>info_terms</code> holds the info formula):
+<code>ll = loglik(levels, successes, mu, sigma)</code> — returns <code>L(mu,sigma)</code> with the <code>realmin</code> floor that
+<code>best_fit</code> uses. <strong><code>best_fit</code> (#2) is refactored</strong> to call it (its internal <code>neg_loglik</code> becomes
+<code>-loglik(...)</code>). Behaviour is identical; the Table 1 gate proves it.</p>
+<h3 id="32-srcmathlr_confidencem-new-the-engine">3.2 <code>src/math/lr_confidence.m</code> (new — the engine)</h3>
+<p><code>ci = lr_confidence(levels, successes, mu, sigma, cfg)</code> returns a struct:
+<code>mu_lo, mu_hi, sigma_lo, sigma_hi, all_fire_cbound, no_fire_cbound, confidence_level</code>.
+Computes the four profile-likelihood bounds above. Uses <code>loglik</code> (#3.1), <code>shape_model</code> inverse for
+thresholds and <code>k</code>, base optimisers, and the bracket-then-bisect root finder. Returns <code>NaN</code> fields on
+non-overlap / non-convergence. One job: turn a fitted model + data into LR confidence bounds.</p>
+<h3 id="33-configsettingsm">3.3 <code>config/settings.m</code></h3>
+<pre><code>s.confidence_level = 0.95;   % RECOMMENDATION (industry/ordnance standard); adjustable dial. addendum LR
+</code></pre>
+<p>Validated in <code>report</code> to be strictly inside (0,1).</p>
+<h3 id="34-srcworkflowreportm-9">3.4 <code>src/workflow/report.m</code> (#9)</h3>
+<p>After the existing estimate/tail computation, call <code>lr_confidence</code>, store the seven fields on
+<code>result</code>, and print a <strong>detailed, plain-language</strong> block (replacing the terse lines). Runs only when
+overlap exists; the no-overlap early return carries the new fields as <code>NaN</code>. Example output:</p>
+<pre><code>=== Neyer sensitivity test: RESULT (25 tests) ===
+
+AVERAGE breaking point: 52.00
+  The height where about half the parts break.
+  95% confident the true average is between 49.8 and 54.2.
+
+SPREAD (how much parts vary): 4.50
+  95% confident the true spread is between 3.4 and 6.1.
+
+ALL-FIRE level (99.9% of parts break): 65.90
+  Plan for it to be as high as 69.8 -- we are 95% confident the true
+  all-fire level is no higher than that.
+
+NO-FIRE level (99.9% of parts survive): 38.10
+  Plan for it to be as low as 34.2 -- we are 95% confident the true
+  no-fire level is no lower than that.
+
+(Confidence = how sure we are, given how many parts you tested. More parts
+ tighten every range. See the chart: plot_result(result).)
+</code></pre>
+<p>The "99.9%" and "95%" texts derive from <code>cfg.tail_fraction</code> and <code>cfg.confidence_level</code>.</p>
+<h3 id="35-srcworkflowplot_resultm-new-the-chart">3.5 <code>src/workflow/plot_result.m</code> (new — the chart)</h3>
+<p><code>h = plot_result(result, cfg)</code> draws the fitted <strong>normal distribution</strong> in physical units:
+- the bell curve <code>pdf(x) = shape_model(x,mu,sigma).phi / sigma</code> over <code>mu ± ~4.5 sigma</code>;
+- a line at the <strong>average</strong>, a shaded <strong>±1 spread</strong> band;
+- markers/labels for <strong>all-fire</strong> and <strong>no-fire</strong> levels;
+- the <strong>confidence bounds</strong> drawn as brackets/shaded margins on the average and the tail levels;
+- plain-language axis label ("breaking level") and title, and a legend.
+Returns the figure handle. Optional <code>plot_result(result, cfg, savepath)</code> writes a PNG via <code>print</code>.
+Standalone (the owner types <code>plot_result(result)</code> after a run; NOT called during the test suite).
+Uses only base plotting (<code>plot</code>, <code>area</code>/<code>fill</code>, <code>line</code>, <code>text</code>, <code>legend</code>, <code>xlabel</code>, <code>title</code>).</p>
+<h3 id="36-webreading-confidencehtml-hub-explainer">3.6 <code>web/reading-confidence.html</code> (hub explainer)</h3>
+<p>A new "For you" page: an <strong>annotated example bell curve</strong> (SVG) showing the average, the spread, the
+tail levels, and the confidence bounds, with a plain-language explanation of what "confidence" means,
+why more parts tighten it, and how to read the chart the tool produces. Linked from the hub.</p>
+<h2 id="4-testing">4. Testing</h2>
+<ul>
+<li><strong><code>tests/test_loglik.m</code> (new):</strong> <code>loglik</code> reproduces the exact log-likelihood values <code>best_fit</code>
+  optimised (hand-checked point + agreement with an inline recompute).</li>
+<li><strong><code>tests/test_lr_confidence.m</code> (new):</strong> on the Table 1 data — every interval <strong>contains</strong> the MLE;
+  bounds are <strong>ordered</strong> (lo &lt; est &lt; hi; all-fire upper &gt; estimate; no-fire lower &lt; estimate); an
+  interval <strong>widens</strong> when confidence rises (0.90 → 0.95 → 0.99); an interval <strong>narrows</strong> with more
+  data; non-overlap input → all <code>NaN</code>.</li>
+<li><strong>Independent cross-check:</strong> compare our LR bounds against an <strong>independent profile-likelihood
+  computation</strong> on Table 1, to a sensible tolerance — via a short <strong>scipy</strong> script (compute the same
+  profile-likelihood intervals from scratch), and additionally against <strong>senpy</strong> <em>if</em> it exposes the
+  numeric likelihood-ratio bounds (not only plots). scipy is the guaranteed oracle; senpy is a bonus.</li>
+<li><strong><code>tests/test_report.m</code> (extend):</strong> the seven new fields exist and are ordered on the Table 1 run;
+  the no-overlap case carries them as <code>NaN</code>; the guard rejects <code>confidence_level</code> outside (0,1).</li>
+<li><strong><code>tests/test_plot_result.m</code> (new):</strong> headless smoke test — <code>figure('visible','off')</code>, call
+  <code>plot_result</code>, and assert a valid figure handle is returned with no error; then attempt <code>print</code> to a
+  temp PNG and assert the file is non-empty <strong>if</strong> headless PNG export is available in the Octave
+  environment (skip that sub-check with a printed note otherwise). Visual correctness is checked by eye
+  in MATLAB.</li>
+<li><strong>No regression:</strong> full suite + Table 1 acceptance stay green; <code>run_all_tests</code> registers the new
+  tests.</li>
+</ul>
+<h2 id="5-acceptance-criteria">5. Acceptance criteria</h2>
+<ul>
+<li>Table 1 acceptance unchanged (5.3922 / 1.0412, all levels, all running estimates).</li>
+<li>LR bounds present, plain-language report prints, chart renders in MATLAB and saves a PNG in Octave.</li>
+<li>LR bounds agree with senpy's likelihood-ratio confidence on Table 1 to tolerance.</li>
+<li>Full suite green in Octave 11.3.0 and MATLAB R2022b (base functions only).</li>
+</ul>
+<h2 id="6-build-order-for-the-plan">6. Build order (for the plan)</h2>
+<ol>
+<li><code>loglik.m</code> + refactor <code>best_fit</code> (prove Table 1 green).</li>
+<li><code>lr_confidence.m</code> (the engine) + its tests incl. the senpy cross-check.</li>
+<li><code>settings.confidence_level</code> + <code>report</code> plain-language block + guard + tests.</li>
+<li><code>plot_result.m</code> + smoke test.</li>
+<li><code>web/reading-confidence.html</code> + hub link.</li>
+</ol>
+<h2 id="7-out-of-scope-yagni">7. Out of scope (YAGNI)</h2>
+<p>No two-sided bound on the tails (one-sided only, per decision); no confidence <em>region</em> (ellipse)
+plot; no c-optimal / tail-targeted redesign (that's the 3POD lineage, noted for the future); no
+change to selection logic (#3) or the brain (#6).</p></body></html>

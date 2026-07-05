@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The family of sensitivity-testing methods</title>
+<link rel="stylesheet" href="papers.css">
+</head>
+<body>
+<a class="back" href="index.html">&larr; hub</a>
+<div class="year">Companion · the lineage</div>
+<h1>The family of sensitivity-testing methods</h1>
+<p class="lead">Neyer's 1994 method (the one you're using) has an ancestor it improved on and several
+descendants that improved on it. Here's the whole family in plain language — each with its own page.
+Click any title to go deep.</p>
+
+<div class="band">
+  <div class="h">The thread through all of them</div>
+  <p>Every method keeps the same core trick — <em>test where it teaches you the most</em> — and each
+  newer one fixes a single weakness: the slow start, the blind spot at the far extremes, or giving
+  different answers when you change the units. It's a story of sharpening, not replacing.</p>
+</div>
+
+<div class="legend">
+  <span class="chip c-anc">ancestor</span>
+  <span class="chip c-core">the one you're using</span>
+  <span class="chip c-succ">successor</span>
+  <span class="chip c-comp">comparison</span>
+  <span class="chip c-impl">free software</span>
+</div>
+
+<div class="entry anc">
+  <span class="chip c-anc">1948 · ancestor</span>
+  <h3><a href="paper-bruceton.html">The staircase method (Bruceton)</a></h3>
+  <p class="a">Dixon &amp; Mood — the "up-and-down" test</p>
+  <p class="s">A no-computer rule: step up if it survived, down if it broke. Simple, but wastes items from a bad start and is weak on the spread.</p>
+</div>
+
+<div class="entry core">
+  <span class="chip c-core">1994 · the one you're using</span>
+  <h3><a href="paper-neyer.html">The smart-placement method (Neyer, D-optimal)</a></h3>
+  <p class="a">Barry T. Neyer</p>
+  <p class="s">Chooses each test at the most-informative level, self-corrects from a wild guess, and pins down both the average and the spread. The first to need a computer.</p>
+</div>
+
+<div class="entry succ">
+  <span class="chip c-succ">2008 · successor</span>
+  <h3><a href="paper-dror-steinberg.html">Clever from the very first test</a></h3>
+  <p class="a">Dror &amp; Steinberg</p>
+  <p class="s">Applies the smartest placement from test one, in batches, with richer outcomes and several dials at once — at the cost of more setup.</p>
+</div>
+
+<div class="entry succ">
+  <span class="chip c-succ">2014 · successor</span>
+  <h3><a href="paper-3pod.html">"Search, estimate, approximate" — 3POD</a></h3>
+  <p class="a">Wu &amp; Tian</p>
+  <p class="s">A three-phase recipe built for one far-extreme level (like 99.9%) — the exact place Neyer is weakest. Its middle phase <em>is</em> Neyer's step.</p>
+</div>
+
+<div class="entry comp">
+  <span class="chip c-comp">2014 · comparison</span>
+  <h3><a href="paper-comparison-2014.html">Neyer vs. 3POD, head to head</a></h3>
+  <p class="a">Ray, Roediger &amp; Neyer</p>
+  <p class="s">A careful side-by-side — notable because Neyer himself co-authored it, testing the newcomer's claims rather than taking them on faith.</p>
+</div>
+
+<div class="entry succ">
+  <span class="chip c-succ">2020 · successor</span><span class="chip c-comp">comparison</span>
+  <h3><a href="paper-3pod2.html">Tidying up both families — 3POD2.0 &amp; Sen-Test</a></h3>
+  <p class="a">Wang, Tian &amp; Wu</p>
+  <p class="s">The most thorough bake-off yet, plus two upgrades: a refined Neyer (Sen-Test) and a 3POD2.0 that no longer changes its answer when you change the units.</p>
+</div>
+
+<div class="entry impl">
+  <span class="chip c-impl">2020 · free software</span>
+  <h3><a href="paper-gonogo.html">gonogo — a free R version</a></h3>
+  <p class="a">Paul Roediger</p>
+  <p class="s">Runs the whole family (Neyer and 3POD2.0) in one place. Feed it your sequence and use its answer as an independent second opinion.</p>
+</div>
+
+<div class="entry comp">
+  <span class="chip c-comp">2024 · real lab</span>
+  <h3><a href="paper-reallab-2024.html">A real-world test, not just simulation</a></h3>
+  <p class="a">Journal of Energetic Materials</p>
+  <p class="s">Ran the old staircase and the modern method on actual lab tests. The modern method wasted far fewer runs — a concrete saving of time and material.</p>
+</div>
+
+<div class="entry impl">
+  <span class="chip c-impl">ongoing · free software</span>
+  <h3><a href="paper-senpy.html">senpy — a free Python version</a></h3>
+  <p class="a">Casey &amp; Arthur</p>
+  <p class="s">Neyer's method in Python — the closest free analogue to what you're building. A second opinion in a different language.</p>
+</div>
+
+<div class="note">Each page is a plain-language summary with the full citation. Want a genuinely
+<em>deep</em> dive on any one — the actual maths, results, and figures from the paper itself? Say
+which, and I'll pull the source and expand that page.</div>
+</body>
+</html>

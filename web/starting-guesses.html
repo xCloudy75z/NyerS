@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Your two starting guesses — a worked example</title>
+<style>
+  :root{--ink:#1b2a30;--soft:#5c6b71;--line:#dde3dd;--brass:#a8823a;--teal:#2f6f6a;--teal2:#235b56;--clay:#bd5e34;--paper:#fbfcfa}
+  *{box-sizing:border-box}
+  body{max-width:820px;margin:0 auto;padding:28px 20px 90px;
+       font:16px/1.62 -apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--paper)}
+  h1{font-size:26px;border-bottom:2px solid var(--brass);padding-bottom:8px;margin-bottom:6px}
+  h2{font-size:20px;margin-top:34px;color:var(--teal2)}
+  .back{display:inline-block;margin-bottom:14px;color:var(--teal2);text-decoration:none;font-size:14px}
+  .lead{color:var(--soft);font-size:18px;margin-top:4px}
+  a{color:var(--clay)}
+  .fig{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 12px;margin:18px 0}
+  .fig svg{display:block;width:100%;height:auto}
+  figcaption{font-size:14px;color:var(--soft);margin-top:8px;padding:0 4px}
+  pre{background:#1b2a30;color:#eef0ec;padding:14px 16px;border-radius:8px;overflow:auto;font-size:13px;line-height:1.6}
+  pre .c{color:#9fb0a8}
+  pre .n{color:#e8b48f}
+  .call{background:#faf6ec;border:1px solid #e4d6b3;border-radius:10px;padding:14px 18px;margin:20px 0}
+  .call b{color:#7e6325}
+  .scene{background:#e4efed;border:1px solid #cbe0dc;border-radius:10px;padding:14px 18px;margin:16px 0;font-size:15.5px}
+</style>
+</head>
+<body>
+<a class="back" href="index.html">&larr; back to hub</a>
+<h1>Your two starting guesses — a worked example</h1>
+<p class="lead">Before it starts, the tool asks you for two rough hints. Neither has to be right — here is
+exactly what they mean, using a drop test on 3D-printed parts.</p>
+
+<div class="scene"><b>The scene:</b> you drop a weight from some height into a printed part; it either
+<b>breaks</b> or <b>survives</b>. You think a part probably breaks somewhere around a 50&nbsp;mm drop —
+but you're not sure, and identical parts won't all break at the same height.</div>
+
+<h2>Guess 1 — roughly where is the average? <span style="font-weight:400;color:#5c6b71;font-size:15px">(avg_low &amp; avg_high)</span></h2>
+<p>You don't need the exact average — just a rough <em>range</em> you're fairly sure it falls in.
+Here: "somewhere between 40 and 60&nbsp;mm." The tool puts its <b>very first drop in the middle</b>.</p>
+
+<div class="fig">
+<svg viewBox="0 0 680 170" role="img" aria-label="A drop-height number line from 30 to 70 mm. A shaded band from 40 to 60 is your guess range for the average; its midpoint at 50 is the first test.">
+  <!-- guess band -->
+  <rect x="200" y="70" width="280" height="34" fill="#f1e9d8" stroke="#e4d6b3"/>
+  <text x="340" y="60" text-anchor="middle" font-size="13" fill="#7e6325">your guess range for the average</text>
+  <!-- axis -->
+  <line x1="60" y1="104" x2="640" y2="104" stroke="#c9d2cb" stroke-width="1.5"/>
+  <!-- ticks -->
+  <g font-size="12" fill="#5c6b71" text-anchor="middle">
+    <line x1="60"  y1="100" x2="60"  y2="108" stroke="#c9d2cb"/><text x="60"  y="124">30</text>
+    <line x1="200" y1="100" x2="200" y2="108" stroke="#a8823a"/><text x="200" y="124" fill="#7e6325">40</text>
+    <line x1="340" y1="100" x2="340" y2="108" stroke="#c9d2cb"/><text x="340" y="124">50</text>
+    <line x1="480" y1="100" x2="480" y2="108" stroke="#a8823a"/><text x="480" y="124" fill="#7e6325">60</text>
+    <line x1="640" y1="100" x2="640" y2="108" stroke="#c9d2cb"/><text x="640" y="124">70</text>
+  </g>
+  <text x="200" y="146" text-anchor="middle" font-size="12.5" fill="#7e6325">avg_low = 40</text>
+  <text x="480" y="146" text-anchor="middle" font-size="12.5" fill="#7e6325">avg_high = 60</text>
+  <!-- midpoint / first test -->
+  <line x1="340" y1="40" x2="340" y2="104" stroke="#bd5e34" stroke-width="2"/>
+  <circle cx="340" cy="104" r="5.5" fill="#bd5e34"/>
+  <text x="340" y="32" text-anchor="middle" font-size="13" fill="#bd5e34" font-weight="600">first drop = 50 mm</text>
+  <text x="655" y="100" text-anchor="end" font-size="11.5" fill="#9aa6a0">drop height (mm)</text>
+</svg>
+<figcaption>The midpoint of your range (50&nbsp;mm) is simply where test&nbsp;1 happens. If your range is
+off, the tool just reaches outside it in the next few tests — it costs a little, not the answer.</figcaption>
+</div>
+
+<h2>Guess 2 — how spread out are the parts? <span style="font-weight:400;color:#5c6b71;font-size:15px">(spread_guess)</span></h2>
+<p>Even <em>identical</em> parts don't all break at the same height — one at 45&nbsp;mm, another at
+55&nbsp;mm. The <b>spread</b> is how wide that scatter is. You give a rough hint of it — here about
+<b>5&nbsp;mm</b>. It is <em>not</em> the average; it's the <b>width</b> of the bell curve of breaking heights.</p>
+
+<div class="fig">
+<svg viewBox="0 0 680 210" role="img" aria-label="A bell curve of breaking heights centred at 50 mm. The spread of about 5 mm is the half-width of the bell; parts scatter to either side of the average.">
+  <!-- baseline -->
+  <line x1="60" y1="170" x2="640" y2="170" stroke="#c9d2cb" stroke-width="1.5"/>
+  <!-- +/-1 spread band (45..55 -> x 270..410) -->
+  <rect x="270" y="60" width="140" height="110" fill="#e4efed" stroke="none"/>
+  <!-- bell curve centred x=340 -->
+  <path d="M170,168 C 275,164 300,66 340,60 C 380,66 405,164 510,168" fill="none" stroke="#1b2a30" stroke-width="2.6" stroke-linecap="round"/>
+  <!-- centre (average) -->
+  <line x1="340" y1="60" x2="340" y2="170" stroke="#a8823a" stroke-width="1.5" stroke-dasharray="5 5"/>
+  <text x="340" y="50" text-anchor="middle" font-size="12.5" fill="#a8823a">average (≈ 50 mm)</text>
+  <!-- spread markers -->
+  <g stroke="#2f6f6a" stroke-width="1.4">
+    <line x1="270" y1="120" x2="410" y2="120"/>
+    <line x1="270" y1="114" x2="270" y2="126"/><line x1="410" y1="114" x2="410" y2="126"/>
+  </g>
+  <text x="340" y="138" text-anchor="middle" font-size="12.5" fill="#235b56">spread_guess ≈ 5 mm each side</text>
+  <text x="150" y="150" font-size="12" fill="#2f6f6a">some break lower</text>
+  <text x="530" y="150" text-anchor="end" font-size="12" fill="#bd5e34">some break higher</text>
+  <text x="655" y="166" text-anchor="end" font-size="11.5" fill="#9aa6a0">drop height (mm)</text>
+</svg>
+<figcaption>A <b>narrow</b> bell = very consistent parts; a <b>wide</b> bell = parts vary a lot.
+<code>spread_guess</code> is your rough hint of that width.</figcaption>
+</div>
+
+<h2>What the spread guess actually does — it sizes the first steps</h2>
+<p>Here's the only job of <code>spread_guess</code>: it tells the tool <b>how far to jump</b> while it hunts
+for the breaking zone. First reach ≈ 2&nbsp;×&nbsp;spread_guess, then the jump <b>doubles</b> each step until
+it has seen both a break and a survive. With <code>spread_guess = 5</code>, starting at 50 and everything
+surviving so far:</p>
+
+<div class="fig">
+<svg viewBox="0 0 680 150" role="img" aria-label="Starting at 50 mm the tool steps outward by 10, then 20, then 40, then 80 mm - the jumps double - reaching 60, 70, 90, 130 mm.">
+  <line x1="50" y1="95" x2="650" y2="95" stroke="#c9d2cb" stroke-width="1.5"/>
+  <!-- points: 50,60,70,90,130 mapped; use 3px/mm from 40: x=50+(v-40)*3 -> 50->80,60->110,70->140,90->200,130->320 (leaves room) -->
+  <g font-size="12" fill="#5c6b71" text-anchor="middle">
+    <circle cx="80"  cy="95" r="5.5" fill="#bd5e34"/><text x="80"  y="118">50</text><text x="80" y="76" fill="#bd5e34" font-size="10.5">start</text>
+    <circle cx="110" cy="95" r="5"   fill="#2f6f6a"/><text x="110" y="118">60</text>
+    <circle cx="140" cy="95" r="5"   fill="#2f6f6a"/><text x="140" y="118">70</text>
+    <circle cx="200" cy="95" r="5"   fill="#2f6f6a"/><text x="200" y="118">90</text>
+    <circle cx="320" cy="95" r="5"   fill="#2f6f6a"/><text x="320" y="118">130</text>
+  </g>
+  <!-- step arcs with labels -->
+  <g fill="none" stroke="#a8823a" stroke-width="1.4">
+    <path d="M80,88 Q95,66 110,88" marker-end="url(#ar)"/>
+    <path d="M110,88 Q125,62 140,88" marker-end="url(#ar)"/>
+    <path d="M140,84 Q170,52 200,88" marker-end="url(#ar)"/>
+    <path d="M200,80 Q260,40 320,88" marker-end="url(#ar)"/>
+  </g>
+  <defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#a8823a"/></marker></defs>
+  <g font-size="11" fill="#7e6325" text-anchor="middle">
+    <text x="95" y="60">+10</text><text x="125" y="56">+20</text><text x="170" y="46">+40</text><text x="260" y="34">+80</text>
+  </g>
+  <text x="655" y="91" text-anchor="end" font-size="11.5" fill="#9aa6a0">drop height (mm)</text>
+</svg>
+<figcaption>The jumps (10 → 20 → 40 → 80) are all built from <code>spread_guess</code>. A <b>bigger</b> guess
+makes bigger opening jumps; a <b>smaller</b> guess makes finer ones. That's all it changes.</figcaption>
+</div>
+
+<h2>In the tool, that's just four lines</h2>
+<pre><span class="c">% your two guesses + how many parts</span>
+avg_low      = <span class="n">40</span>;   <span class="c">% low end of your average guess (mm)   — was mu_min</span>
+avg_high     = <span class="n">60</span>;   <span class="c">% high end of your average guess (mm)  — was mu_max</span>
+spread_guess = <span class="n">5</span>;    <span class="c">% rough part-to-part variation (mm)    — was sigma_guess</span>
+num_parts    = <span class="n">25</span>;   <span class="c">% how many parts you'll test           — was N</span></pre>
+
+<div class="call"><b>The reassuring part:</b> both are only <em>starting hints</em>. The tool measures the
+<b>true</b> average and spread from your actual break/survive results and self-corrects — your guesses do
+not appear in the final answer. A wrong guess costs a few extra tests, nothing more.</div>
+
+<p style="margin-top:22px">Next: <a href="how-it-flows.html">how the whole tool works</a>
+· <a href="before-you-start.html">plan how many parts you need</a></p>
+</body>
+</html>

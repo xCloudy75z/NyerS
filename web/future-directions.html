@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ideas to explore next</title>
+<style>
+  body{max-width:820px;margin:0 auto;padding:28px 20px 90px;
+       font:16px/1.62 -apple-system,Segoe UI,Roboto,sans-serif;color:#1b2a30;background:#fbfcfa}
+  h1{font-size:27px;border-bottom:2px solid #a8823a;padding-bottom:8px}
+  h2{font-size:20px;margin-top:30px;color:#235b56}
+  .back{display:inline-block;margin-bottom:16px;color:#235b56;text-decoration:none;font-size:14px}
+  .card{background:#fff;border:1px solid #dde3dd;border-left:4px solid #a8823a;border-radius:10px;padding:16px 18px;margin:16px 0}
+  .card.small{border-left-color:#9aa6a0}
+  .tag{font-size:12px;color:#7e6325;background:#f1e9d8;border:1px solid #e4d6b3;border-radius:20px;padding:1px 10px}
+  table{border-collapse:collapse;width:100%;margin:12px 0}
+  th,td{border:1px solid #dde3dd;padding:8px 11px;text-align:left;font-size:14.5px;vertical-align:top}
+  th{background:#f1e9d8}
+  a{color:#bd5e34}
+</style>
+</head>
+<body>
+<a class="back" href="index.html">&larr; back to hub</a>
+<h1>Ideas to explore next</h1>
+<p>Things deliberately left out of the current tool, kept here to raise with your instructor. The
+tool as built is complete and correct for its job; these are <em>optional next steps</em>, not gaps.</p>
+
+<div class="card">
+<h2 style="margin-top:4px">1 · A "tail-targeted" design <span class="tag">worth discussing</span></h2>
+<p><strong>The idea in one line:</strong> instead of learning the whole bell curve and then
+<em>extrapolating</em> out to an extreme level (like 1-in-a-million), <strong>concentrate the tests
+right near that extreme level</strong> so you measure <em>that one number</em> as tightly as
+possible.</p>
+
+<table>
+  <tr><th>Your current tool (Neyer / D-optimal)</th><th>A tail-targeted design (c-optimal / 3POD)</th></tr>
+  <tr><td>Spreads tests to learn the whole distribution (average + spread) well.</td><td>Puts tests out near the one extreme level you care about.</td></tr>
+  <tr><td>Gets the extreme (e.g. 1-in-a-million) level by extrapolation &mdash; with a <strong>wider &plusmn;</strong>.</td><td>Pins that specific extreme level <strong>tightly</strong>.</td></tr>
+  <tr><td>Best overall picture.</td><td>Worse at the overall average/spread &mdash; it trades breadth for one sharp number.</td></tr>
+</table>
+
+<p><strong>Why it might matter for your drop test:</strong> if what your instructor ultimately wants
+is a <em>single</em> extreme tail number &mdash; e.g. the 1-in-a-million level at 95% confidence
+&mdash; a tail-targeted design could deliver it more tightly, possibly with the same or fewer printed
+parts.</p>
+
+<p><strong>The honest catch:</strong> this is a <em>different, bigger method</em> &mdash; a new engine,
+not a small tweak to the current tool. It comes from the idea of <strong>c-optimality</strong>, and is
+realised in the <strong>3POD</strong> method
+(<a href="paper-3pod.html">Wu &amp; Tian, 2014</a>) and its refinement
+<a href="paper-3pod2.html">3POD2.0 (2020)</a>. The commercial <strong>SenTest</strong> software also
+offers a c-optimal option. Our
+<a href="how-we-know.html">validation</a> and <a href="complete-guide.html">concept</a> pages explain
+why D-optimal (what you have) is deliberately <em>not</em> tail-optimal.</p>
+
+<p><strong>Question for your instructor:</strong> is the goal the whole distribution (average, spread,
+and reasonable tail numbers) &mdash; where your current Neyer tool is the right fit &mdash; or is it
+one specific extreme tail measured as tightly as possible, where a 3POD-style design would be worth
+the extra build?</p>
+</div>
+
+<div class="card small">
+<h2 style="margin-top:4px">2 · A confidence-region (ellipse) plot <span class="tag">smaller extra</span></h2>
+<p>Because the average and the spread are estimated <em>together</em>, their combined uncertainty
+forms an <strong>oval region</strong> on a map of "average" vs "spread" (a <em>confidence ellipse</em>).
+SenTest can draw it. We left it out because your bell-curve chart and the plain low&ndash;high ranges
+already tell the story for a non-technical reader &mdash; but it's an easy add if your instructor
+would like to see the joint picture.</p>
+</div>
+
+<p style="color:#5c6b71;font-size:13.5px">Both are parked, not lost. Say the word and either can be
+built on top of the current tool.</p>
+</body>
+</html>
